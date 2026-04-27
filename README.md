@@ -115,3 +115,5 @@ Production checklist:
 - Enable HTTPS on both frontend and backend.
 - Point the frontend Axios base URL to the deployed API.
 - Verify login, event CRUD, charts, and CSV export after deployment.
+
+THATS IT THANKYOUU!
