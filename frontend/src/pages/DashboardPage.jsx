@@ -6,6 +6,7 @@ import api from '../api/client';
 import StatCard from '../components/StatCard';
 import ChartCard from '../components/ChartCard';
 import CampusHighlightsCarousel from '../components/CampusHighlightsCarousel';
+import ChartViewport from '../components/ChartViewport';
 import { useTheme } from '../context/ThemeContext';
 import { createChartTheme } from '../utils/chartTheme';
 
@@ -76,24 +77,24 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 xl:grid-cols-2">
         <ChartCard title="Events by Department" note="Distribution of events across departments.">
-          <div className="h-80">
+          <ChartViewport className="h-[320px]">
             <Bar data={departmentChart} options={cartesian} />
-          </div>
+          </ChartViewport>
         </ChartCard>
         <ChartCard title="Monthly Event Trend" note="Event creation over time.">
-          <div className="h-80">
+          <ChartViewport className="h-[320px]">
             <Line data={trendChart} options={cartesian} />
-          </div>
+          </ChartViewport>
         </ChartCard>
         <ChartCard title="Category Breakdown" note="Event categories currently in use.">
-          <div className="h-72">
+          <ChartViewport className="h-[300px]">
             <Doughnut data={categoryChart} options={radial} />
-          </div>
+          </ChartViewport>
         </ChartCard>
         <ChartCard title="Internal vs External Participants" note="Participant type split.">
-          <div className="h-72">
+          <ChartViewport className="h-[300px]">
             <Pie data={participantChart} options={radial} />
-          </div>
+          </ChartViewport>
         </ChartCard>
       </div>
 

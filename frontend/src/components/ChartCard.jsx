@@ -1,6 +1,6 @@
 export default function ChartCard({ title, children, note }) {
   return (
-    <section className="portal-panel p-5">
+    <section className="portal-panel overflow-hidden p-5">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
           <h3 className="portal-heading text-lg">{title}</h3>

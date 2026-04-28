@@ -47,12 +47,31 @@ CREATE TABLE IF NOT EXISTS results (
   UNIQUE (event_id, rank)
 );
 
+-- ==========================================
+-- INDEXES FOR QUERY OPTIMIZATION
+-- Strategic indexes for analytical queries and common lookups
+-- ==========================================
 CREATE INDEX IF NOT EXISTS idx_events_department_id ON events(department_id);
 CREATE INDEX IF NOT EXISTS idx_events_date ON events(date);
+CREATE INDEX IF NOT EXISTS idx_events_category ON events(category);
 CREATE INDEX IF NOT EXISTS idx_participants_event_id ON participants(event_id);
+CREATE INDEX IF NOT EXISTS idx_participants_type ON participants(participant_type);
+CREATE INDEX IF NOT EXISTS idx_participants_department ON participants(department);
 CREATE INDEX IF NOT EXISTS idx_results_event_id ON results(event_id);
 CREATE INDEX IF NOT EXISTS idx_results_participant_id ON results(participant_id);
+CREATE INDEX IF NOT EXISTS idx_results_rank ON results(rank);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_departments_name ON departments(department_name);
 
+-- ==========================================
+-- COMPOSITE INDEX FOR ANALYTICAL QUERIES
+-- Optimizes department + date range queries
+-- ==========================================
+CREATE INDEX IF NOT EXISTS idx_events_dept_date ON events(department_id, date);
+
+-- ==========================================
+-- INITIAL DATA SEEDING
+-- ==========================================
 INSERT INTO departments (department_name)
 VALUES ('Computer Science'), ('Information Technology'), ('Electronics'), ('Mechanical')
 ON CONFLICT (department_name) DO NOTHING;
