@@ -1,58 +1,54 @@
 # College Event Statistics Portal
 
-Full-stack college event analytics portal built with React, Node.js, Express, and PostgreSQL.
+A full-stack college event analytics portal built with React, Node.js, Express, and PostgreSQL.
+
+## Overview
+
+This project tracks events, participants, departments, and results, then presents the data in a dashboard with charts, summaries, and leaderboard-style reporting.
 
 ## Project Structure
 
-- `frontend/` React app with Tailwind CSS, React Router, Axios, and charts
-- `backend/` Express REST API with JWT auth and PostgreSQL access
-- `database/` PostgreSQL schema and seed-ready SQL
+- `frontend/` React app built with Vite, Tailwind CSS, Axios, React Router, and Chart.js
+- `backend/` Express REST API with JWT authentication, security middleware, and PostgreSQL access
+- `database/` PostgreSQL schema and SQL for initializing the database
 
-## Folder Structure
+## Run Modes
 
-```text
-college-event-portal/
-frontend/
-backend/
-database/
-```
+- Root `npm run dev` starts both backend and frontend together through `dev.js`
+- `npm run backend` starts only the API
+- `npm run frontend` starts only the client app
 
 ## Backend Setup
 
-1. Create a PostgreSQL database named `college_event_portal` or update the connection string.
+1. Create a PostgreSQL database named `college_event_portal` or update the connection string in your environment file.
 2. Run `database/schema.sql` to create the tables and default departments.
-3. Copy `backend/.env.example` to `backend/.env` and set `DATABASE_URL`, `JWT_SECRET`, and `CLIENT_ORIGIN`.
-4. Install dependencies in `backend/` and run `npm run dev`.
-5. Seed the admin account with `npm run seed:admin`.
+3. Copy `backend/.env.example` to `backend/.env`.
+4. Set these backend values:
+   - `PORT=5050`
+   - `DATABASE_URL=postgresql://postgres:password@localhost:5432/college_event_portal`
+   - `JWT_SECRET=replace_with_a_long_random_secret`
+   - `CLIENT_ORIGIN=http://localhost:5173`
+5. Install dependencies in `backend/` and run `npm run dev`.
+6. Seed the admin account with `npm run seed:admin`.
 
-Default seed credentials are:
+Default seed credentials:
 
 - Email: `admin@college.edu`
 - Password: `password123`
 
-## PostgreSQL Schema
-
-The schema includes:
-
-- `users`
-- `departments`
-- `events`
-- `participants`
-- `results`
-
-Foreign keys, uniqueness rules, and indexes are included for relational integrity and reporting performance.
-
 ## Frontend Setup
 
 1. Copy `frontend/.env.example` to `frontend/.env`.
-2. Install dependencies in `frontend/`.
-3. Start the app with `npm run dev`.
-4. Open the login page and sign in with the seeded admin account.
+2. Set `VITE_API_URL=http://localhost:5050/api`.
+3. Install dependencies in `frontend/`.
+4. Start the app with `npm run dev`.
+5. Sign in with the seeded admin account.
 
-## API Integration
+## API Endpoints
 
-The frontend uses Axios with JWT token injection and communicates with these endpoints:
+The frontend communicates with these API routes:
 
+- `GET /health`
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `GET /api/events`
@@ -60,6 +56,7 @@ The frontend uses Axios with JWT token injection and communicates with these end
 - `GET /api/events/:id`
 - `PUT /api/events/:id`
 - `DELETE /api/events/:id`
+- `GET /api/departments`
 - `POST /api/participants`
 - `GET /api/participants/event/:eventId`
 - `POST /api/results`
@@ -72,9 +69,7 @@ The frontend uses Axios with JWT token injection and communicates with these end
 - `GET /api/dashboard/top-departments`
 - `GET /api/dashboard/winners-leaderboard`
 
-## Dashboard Charts
-
-The dashboard includes:
+## Dashboard Features
 
 - Events by Department
 - Monthly Event Trend
@@ -83,37 +78,38 @@ The dashboard includes:
 - Top Active Departments
 - Winners Leaderboard
 
-## Run Locally
+## Database Schema
 
-1. Create PostgreSQL database and run `database/schema.sql`.
-2. Configure `backend/.env` from `backend/.env.example` and `frontend/.env` from `frontend/.env.example`.
-3. Install dependencies in `backend/` and `frontend/`.
-4. From the workspace root, run `npm run dev` to start both apps together.
-5. If you prefer separate terminals, run `npm run dev --prefix backend` and `npm run dev --prefix frontend`.
+The schema includes these core tables:
 
-## Deployment Guide
+- `users`
+- `departments`
+- `events`
+- `participants`
+- `results`
 
-Backend deployment:
+Foreign keys, uniqueness rules, and indexes are included for relational integrity and reporting performance.
+
+## Deployment Notes
+
+Backend:
 
 1. Deploy the Express API to a Node.js host such as Render, Railway, Fly.io, or a VM.
-2. Set production environment variables for `DATABASE_URL`, `JWT_SECRET`, `PORT`, and `CLIENT_ORIGIN`.
-3. Point `DATABASE_URL` to a managed PostgreSQL service.
+2. Set production values for `DATABASE_URL`, `JWT_SECRET`, `PORT`, and `CLIENT_ORIGIN`.
+3. Point `DATABASE_URL` to a managed PostgreSQL instance.
 4. Run the schema SQL against the production database.
 5. Seed or create the admin user once the database is live.
 
-Frontend deployment:
+Frontend:
 
-1. Build the React app with `npm run build`.
-2. Deploy the generated `dist/` folder to Vercel, Netlify, or any static host.
+1. Build the app with `npm run build` inside `frontend/`.
+2. Deploy the generated `dist/` folder to Vercel, Netlify, or another static host.
 3. Set `VITE_API_URL` to the deployed backend API URL.
 4. Confirm CORS allows the frontend origin.
 
 Production checklist:
 
-- Use strong JWT secrets.
-- Keep the database credentials out of source control.
+- Use a strong JWT secret.
+- Keep database credentials out of source control.
 - Enable HTTPS on both frontend and backend.
-- Point the frontend Axios base URL to the deployed API.
-- Verify login, event CRUD, charts, and CSV export after deployment.
-
-THATS IT THANKYOUU!
+- Verify login, event CRUD, dashboard charts, and CSV export after deployment.
