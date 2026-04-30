@@ -1,8 +1,9 @@
 const router = require('express').Router();
-const { authenticateToken, requireRole } = require('../middleware/auth');
-const { addResult, getResults } = require('../controllers/resultsController');
+const { requireRole } = require('../middleware/auth');
+const { addResult, getResults, getLeaderboard } = require('../controllers/resultsController');
 
-router.post('/', authenticateToken, requireRole('admin'), addResult);
-router.get('/', authenticateToken, getResults);
+router.post('/', requireRole('admin'), addResult);
+router.get('/leaderboard', getLeaderboard);
+router.get('/', getResults);
 
 module.exports = router;

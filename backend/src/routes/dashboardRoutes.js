@@ -1,5 +1,4 @@
 const router = require('express').Router();
-const { authenticateToken } = require('../middleware/auth');
 const {
   getSummary,
   getEventsByDepartment,
@@ -10,12 +9,12 @@ const {
   getWinnersLeaderboard,
 } = require('../controllers/dashboardController');
 
-router.get('/summary', authenticateToken, getSummary);
-router.get('/events-by-department', authenticateToken, getEventsByDepartment);
-router.get('/monthly-trend', authenticateToken, getMonthlyTrend);
-router.get('/category-breakdown', authenticateToken, getCategoryBreakdown);
-router.get('/participant-mix', authenticateToken, getParticipantMix);
-router.get('/top-departments', authenticateToken, getTopDepartments);
-router.get('/winners-leaderboard', authenticateToken, getWinnersLeaderboard);
+router.get('/summary', getSummary);
+router.get('/events-by-department', getEventsByDepartment);
+router.get('/monthly-trend', getMonthlyTrend);
+router.get('/category-breakdown', getCategoryBreakdown);
+router.get('/participant-mix', getParticipantMix);
+router.get('/top-departments', getTopDepartments);
+router.get('/winners-leaderboard', getWinnersLeaderboard);
 
 module.exports = router;

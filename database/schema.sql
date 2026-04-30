@@ -37,6 +37,16 @@ CREATE TABLE IF NOT EXISTS participants (
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS participation (
+  id SERIAL PRIMARY KEY,
+  event_id INT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  participant_id INT NOT NULL REFERENCES participants(id) ON DELETE CASCADE,
+  participation_date DATE NOT NULL,
+  status VARCHAR(20) NOT NULL CHECK (status IN ('attended', 'registered', 'absent')),
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  UNIQUE (event_id, participant_id)
+);
+
 CREATE TABLE IF NOT EXISTS results (
   id SERIAL PRIMARY KEY,
   event_id INT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
@@ -57,6 +67,9 @@ CREATE INDEX IF NOT EXISTS idx_events_category ON events(category);
 CREATE INDEX IF NOT EXISTS idx_participants_event_id ON participants(event_id);
 CREATE INDEX IF NOT EXISTS idx_participants_type ON participants(participant_type);
 CREATE INDEX IF NOT EXISTS idx_participants_department ON participants(department);
+CREATE INDEX IF NOT EXISTS idx_participation_event_id ON participation(event_id);
+CREATE INDEX IF NOT EXISTS idx_participation_participant_id ON participation(participant_id);
+CREATE INDEX IF NOT EXISTS idx_participation_status ON participation(status);
 CREATE INDEX IF NOT EXISTS idx_results_event_id ON results(event_id);
 CREATE INDEX IF NOT EXISTS idx_results_participant_id ON results(participant_id);
 CREATE INDEX IF NOT EXISTS idx_results_rank ON results(rank);

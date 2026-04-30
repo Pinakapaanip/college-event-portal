@@ -1,0 +1,51 @@
+event_id,event_name,department,category,date,venue,organizer
+1,Event_1,CSE,Technical,2025-03-08,Auditorium,Cultural Club
+2,Event_2,CSE,Technical,2025-04-02,Main Hall,Coding Club
+3,Event_3,AI,Cultural,2025-01-18,Auditorium,Tech Society
+4,Event_4,AI,Workshop,2025-03-26,Main Hall,Cultural Club
+5,Event_5,MECH,Sports,2025-03-05,Auditorium,Sports Committee
+6,Event_6,CSE,Technical,2025-04-04,Lab 1,Sports Committee
+7,Event_7,ECE,Technical,2025-04-18,Main Hall,Tech Society
+8,Event_8,CSE,Sports,2025-03-19,Auditorium,Coding Club
+9,Event_9,CSE,Cultural,2025-03-03,Auditorium,Coding Club
+10,Event_10,MECH,Sports,2025-04-21,Lab 1,Cultural Club
+11,Event_11,ECE,Sports,2025-02-22,Lab 1,Coding Club
+12,Event_12,AI,Cultural,2025-02-15,Ground,Sports Committee
+13,Event_13,AI,Sports,2025-01-08,Main Hall,Sports Committee
+14,Event_14,MECH,Sports,2025-01-07,Lab 1,Cultural Club
+15,Event_15,MECH,Workshop,2025-04-05,Lab 1,Cultural Club
+16,Event_16,AI,Sports,2025-04-19,Ground,Sports Committee
+17,Event_17,AI,Cultural,2025-04-03,Main Hall,Coding Club
+18,Event_18,AI,Cultural,2025-04-20,Main Hall,Tech Society
+19,Event_19,MECH,Workshop,2025-03-18,Main Hall,Coding Club
+20,Event_20,ECE,Sports,2025-01-10,Ground,Cultural Club
+21,Event_21,MECH,Technical,2025-03-17,Auditorium,Coding Club
+22,Event_22,ECE,Cultural,2025-02-12,Auditorium,Coding Club
+23,Event_23,ECE,Workshop,2025-01-04,Lab 1,Sports Committee
+24,Event_24,AI,Technical,2025-02-19,Main Hall,Coding Club
+25,Event_25,MECH,Technical,2025-02-05,Ground,Cultural Club
+26,Event_26,ECE,Workshop,2025-02-18,Auditorium,Sports Committee
+27,Event_27,MECH,Sports,2025-04-17,Ground,Coding Club
+28,Event_28,AI,Cultural,2025-01-11,Main Hall,Cultural Club
+29,Event_29,AI,Technical,2025-01-23,Main Hall,Cultural Club
+30,Event_30,CSE,Technical,2025-03-03,Auditorium,Sports Committee
+31,Event_31,MECH,Cultural,2025-02-24,Ground,Cultural Club
+32,Event_32,MECH,Workshop,2025-02-04,Main Hall,Tech Society
+33,Event_33,ECE,Workshop,2025-04-15,Main Hall,Coding Club
+34,Event_34,CSE,Workshop,2025-03-26,Main Hall,Cultural Club
+35,Event_35,AI,Cultural,2025-04-05,Ground,Cultural Club
+36,Event_36,ECE,Workshop,2025-02-28,Main Hall,Tech Society
+37,Event_37,CSE,Technical,2025-01-03,Auditorium,Cultural Club
+38,Event_38,MECH,Workshop,2025-04-07,Ground,Coding Club
+39,Event_39,AI,Workshop,2025-01-13,Lab 1,Tech Society
+40,Event_40,ECE,Workshop,2025-04-05,Auditorium,Sports Committee
+41,Event_41,AI,Technical,2025-01-24,Lab 1,Coding Club
+42,Event_42,CSE,Workshop,2025-02-02,Main Hall,Cultural Club
+43,Event_43,CSE,Technical,2025-02-13,Main Hall,Cultural Club
+44,Event_44,CSE,Technical,2025-04-22,Lab 1,Sports Committee
+45,Event_45,AI,Sports,2025-02-09,Ground,Cultural Club
+46,Event_46,ECE,Workshop,2025-03-25,Main Hall,Coding Club
+47,Event_47,MECH,Technical,2025-01-18,Auditorium,Sports Committee
+48,Event_48,AI,Sports,2025-01-08,Lab 1,Sports Committee
+49,Event_49,AI,Workshop,2025-03-20,Main Hall,Sports Committee
+50,Event_50,CSE,Cultural,2025-03-04,Main Hall,Cultural Club

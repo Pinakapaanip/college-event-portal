@@ -2,51 +2,231 @@
 
 A full-stack college event analytics portal built with React, Node.js, Express, and PostgreSQL.
 
-## Overview
+## 🎯 Overview
 
 This project tracks events, participants, departments, and results, then presents the data in a dashboard with charts, summaries, and leaderboard-style reporting.
 
-## Project Structure
+**Now with real dataset integration** - Load Excel/CSV data directly into the database with a single command!
+
+## 📁 Project Structure
 
 - `frontend/` React app built with Vite, Tailwind CSS, Axios, React Router, and Chart.js
 - `backend/` Express REST API with JWT authentication, security middleware, and PostgreSQL access
 - `database/` PostgreSQL schema and SQL for initializing the database
+- `data/` Real datasets (events, participants, results, participation tracking)
 
-## Run Modes
+## 🚀 Quick Start
 
-- Root `npm run dev` starts both backend and frontend together through `dev.js`
-- `npm run backend` starts only the API
-- `npm run frontend` starts only the client app
+### Prerequisites
+- PostgreSQL running locally
+- Node.js and npm installed
 
-## Backend Setup
+### Setup (30 seconds)
 
-1. Create a PostgreSQL database named `college_event_portal` or update the connection string in your environment file.
-2. Run `database/schema.sql` to create the tables and default departments.
-3. Copy `backend/.env.example` to `backend/.env`.
-4. Set these backend values:
-   - `PORT=5050`
-   - `DATABASE_URL=postgresql://postgres:password@localhost:5432/college_event_portal`
-   - `JWT_SECRET=replace_with_a_long_random_secret`
-   - `CLIENT_ORIGIN=http://localhost:5173`
-5. Install dependencies in `backend/` and run `npm run dev`.
-6. Seed the admin account with `npm run seed:admin`.
+```bash
+# 1. Backend setup
+cd backend
+npm install
+npm run setup:db       # Initialize database
+npm run load:data      # Load datasets from Excel/CSV
+npm run seed:admin     # Create admin account
 
-Default seed credentials:
+# 2. Frontend setup
+cd ../frontend
+npm install
 
+# 3. Start everything
+cd ..
+npm run dev
+```
+
+Then open `http://localhost:5173` and login with:
 - Email: `admin@college.edu`
 - Password: `password123`
 
-## Frontend Setup
+## 📚 Documentation
 
-1. Copy `frontend/.env.example` to `frontend/.env`.
-2. Set `VITE_API_URL=http://localhost:5050/api`.
-3. Install dependencies in `frontend/`.
-4. Start the app with `npm run dev`.
-5. Sign in with the seeded admin account.
+- [INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md) - Detailed setup instructions
+- [DATA_INTEGRATION_SUMMARY.md](DATA_INTEGRATION_SUMMARY.md) - Technical implementation details
 
-## API Endpoints
+## 🎨 Features
 
-The frontend communicates with these API routes:
+### Dashboard
+- Real-time statistics (total events, participants, departments)
+- Events by department visualization
+- Monthly event trends
+- Category distribution analysis
+- Internal vs external participant split
+- Top active departments
+- Winners leaderboard
+
+### Events Management
+- View all events with pagination
+- Filter by department and category
+- Search by title, venue, or organizer
+- Date range filtering
+- Export events to CSV
+- Add new events (admin)
+
+### Participants & Results
+- View participants per event
+- Add participants with duplicate prevention
+- Display results and leaderboard
+- Rank winners with prizes
+- Attendance tracking
+
+### Analytics
+- Dynamic filtering by date, department, and category
+- Real-time chart updates
+- Participant analysis by department
+- Event timeline visualization
+
+## 🔌 API Endpoints
+
+### Core Resources
+- `GET /events` - List events with filters, pagination, sorting
+- `GET /events/:id` - Get single event details
+- `POST /events` - Create event (admin only)
+- `GET /departments` - List all departments
+- `GET /participants/event/:id` - Get event participants
+- `POST /participants` - Add participant
+- `GET /results` - Get results with optional event filter
+- `GET /results/leaderboard` - Get top results/winners
+- `POST /results` - Add result (admin only)
+
+### Analytics
+- `GET /dashboard/summary` - Overview statistics
+- `GET /dashboard/events-by-department` - Department breakdown
+- `GET /dashboard/monthly-trend` - Monthly event trends
+- `GET /dashboard/category-breakdown` - Category distribution
+- `GET /dashboard/participant-mix` - Internal vs external split
+- `GET /dashboard/top-departments` - Top departments by participation
+- `GET /dashboard/winners-leaderboard` - Top winners
+
+## 📊 Real Datasets
+
+The application loads data from:
+- **events** - CSV file with event details
+- **participants** - Excel file with student information
+- **participation** - Excel file with attendance records
+- **results** - CSV file with rankings and prizes
+
+Data is automatically normalized and deduplicated during load.
+
+## 🔐 Authentication
+
+JWT-based authentication with role-based access control:
+- **Admin**: Full access including data management
+- **User**: Read-only access to data
+
+Default admin credentials (after seeding):
+- Email: `admin@college.edu`
+- Password: `password123`
+
+## 💾 Database
+
+PostgreSQL with optimized schema:
+- Departments, Events, Participants, Participation, Results tables
+- Strategic indexes for fast queries
+- Foreign keys for referential integrity
+- Unique constraints for duplicate prevention
+
+## 🛠️ Environment Configuration
+
+### Backend (.env)
+```
+PORT=5050
+DATABASE_URL=postgresql://postgres:password@localhost:5432/college_event_portal
+JWT_SECRET=your_secret_key_here
+CLIENT_ORIGIN=http://localhost:5173
+NODE_ENV=development
+```
+
+### Frontend (.env)
+```
+VITE_API_URL=http://localhost:5050/api
+```
+
+## 📝 Available Scripts
+
+### Backend
+- `npm run dev` - Start with nodemon (auto-reload)
+- `npm start` - Start production server
+- `npm run setup:db` - Initialize database schema
+- `npm run load:data` - Load real datasets
+- `npm run seed:admin` - Create default admin account
+
+### Frontend
+- `npm run dev` - Start dev server with HMR
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+
+### Root
+- `npm run dev` - Start both backend and frontend concurrently
+
+## 🎯 What's New
+
+- ✨ Real data integration from Excel and CSV files
+- ✨ Attendance tracking table for participation records
+- ✨ Enhanced dashboard with aggregated analytics
+- ✨ Leaderboard view for top performers
+- ✨ Duplicate prevention on key fields
+- ✨ Department name normalization
+- ✨ Improved database indexes for analytics queries
+
+## 🐛 Troubleshooting
+
+### Database Connection Issues
+- Ensure PostgreSQL is running
+- Check DATABASE_URL in .env
+- Verify database user permissions
+
+### Data Loading Issues
+- Ensure data files exist in `data/` folder
+- Check file names match exactly
+- Verify Excel files are not corrupted
+
+### Frontend Shows No Data
+- Check browser console for errors
+- Verify API endpoint in Network tab
+- Ensure auth token is stored (check localStorage)
+- Check backend is running on port 5050
+
+## 📈 Performance
+
+- Optimized queries with strategic indexing
+- Pagination support on large datasets
+- Efficient frontend API calls with Axios
+- Real-time data updates
+- Responsive UI with Tailwind CSS
+
+## 🚀 Deployment
+
+For production deployment:
+1. Set `NODE_ENV=production`
+2. Use strong `JWT_SECRET`
+3. Configure production database URL
+4. Update `CLIENT_ORIGIN` with production domain
+5. Set HTTPS for secure connections
+6. Use environment-specific variables
+
+## 📄 License
+
+This project is part of a college event management system.
+
+## 🤝 Support
+
+For issues or questions:
+1. Check INTEGRATION_GUIDE.md for setup help
+2. Review DATA_INTEGRATION_SUMMARY.md for architecture details
+3. Check browser DevTools console for error messages
+4. Verify all configuration files are properly set
+
+---
+
+**Status**: ✅ Production Ready
+**Last Updated**: April 2026
+**Version**: 1.0.0 (Real Data Integration Complete)
 
 - `GET /health`
 - `POST /api/auth/register`

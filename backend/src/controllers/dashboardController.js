@@ -2,31 +2,38 @@ const asyncHandler = require('../utils/asyncHandler');
 const store = require('../services/demoStore');
 
 const getSummary = asyncHandler(async (req, res) => {
-  res.json(store.getSummary());
+  const stats = store.getSummary();
+  res.json(stats);
 });
 
 const getEventsByDepartment = asyncHandler(async (req, res) => {
-  res.json(store.getEventsByDepartment());
+  const data = store.getEventsByDepartment();
+  res.json(data);
 });
 
 const getMonthlyTrend = asyncHandler(async (req, res) => {
-  res.json(store.getMonthlyTrend());
+  const data = store.getMonthlyTrend();
+  res.json(data);
 });
 
 const getCategoryBreakdown = asyncHandler(async (req, res) => {
-  res.json(store.getCategoryBreakdown());
+  const data = store.getCategoryBreakdown();
+  res.json(data);
 });
 
 const getParticipantMix = asyncHandler(async (req, res) => {
-  res.json(store.getParticipantMix());
+  const data = store.getParticipantMix();
+  res.json(data);
 });
 
 const getTopDepartments = asyncHandler(async (req, res) => {
-  res.json(store.getTopDepartments());
+  const data = store.getTopDepartments();
+  res.json(data);
 });
 
 const getWinnersLeaderboard = asyncHandler(async (req, res) => {
-  res.json(store.getWinnersLeaderboard());
+  const data = store.getWinnersLeaderboard();
+  res.json(data);
 });
 
 module.exports = {

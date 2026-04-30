@@ -7,11 +7,18 @@ const addResult = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'All result fields are required.' });
   }
 
-  res.status(201).json(store.addResult({ event_id, participant_id, rank, prize }));
+  const result = store.addResult({ event_id, participant_id, rank, prize });
+  res.status(201).json(result);
 });
 
 const getResults = asyncHandler(async (req, res) => {
-  res.json(store.getResults(req.query.eventId));
+  const results = store.getResults(req.query.eventId);
+  res.json(results);
 });
 
-module.exports = { addResult, getResults };
+const getLeaderboard = asyncHandler(async (req, res) => {
+  const leaderboard = store.getWinnersLeaderboard();
+  res.json(leaderboard);
+});
+
+module.exports = { addResult, getResults, getLeaderboard };

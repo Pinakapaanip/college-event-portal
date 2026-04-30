@@ -14,11 +14,12 @@ import { createChartTheme } from '../utils/chartTheme';
 
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
-const EVENT_CATEGORIES = ['Seminar', 'Competition', 'Festival', 'Exhibition', 'Sports'];
-
 function normalizeCategory(value) {
   const normalized = String(value ?? '').trim().toLowerCase();
   if (normalized === 'compition' || normalized === 'competition') return 'Competition';
+  if (normalized === 'technical') return 'Technical';
+  if (normalized === 'cultural') return 'Cultural';
+  if (normalized === 'workshop') return 'Workshop';
   if (normalized === 'seminar') return 'Seminar';
   if (normalized === 'festival') return 'Festival';
   if (normalized === 'exhibition') return 'Exhibition';
@@ -80,6 +81,11 @@ export default function AnalyticsPage() {
 
   const departmentNames = useMemo(() => data.departments.map((department) => department.department_name), [data.departments]);
 
+  const availableCategories = useMemo(() => {
+    const categories = [...new Set(data.events.map((event) => normalizeCategory(event.category)).filter(Boolean))];
+    return categories.sort((left, right) => left.localeCompare(right));
+  }, [data.events]);
+
   const filteredEvents = useMemo(() => {
     return data.events.filter((event) => {
       if (filters.startDate && event.date < filters.startDate) return false;
@@ -139,17 +145,19 @@ export default function AnalyticsPage() {
   }, [departmentNames, filteredEvents]);
 
   const categorySeries = useMemo(() => {
-    const counts = new Map(EVENT_CATEGORIES.map((category) => [category, 0]));
+    const counts = new Map(availableCategories.map((category) => [category, 0]));
     for (const event of filteredEvents) {
       const category = normalizeCategory(event.category);
       counts.set(category, (counts.get(category) || 0) + 1);
     }
 
+    const palette = ['#0b1f4d', '#132b6b', '#d4af37', '#e67e22', '#9f7aea', '#2a9d8f', '#f94144', '#577590'];
+
     return {
-      labels: EVENT_CATEGORIES,
-      datasets: [{ data: EVENT_CATEGORIES.map((category) => counts.get(category) || 0), backgroundColor: ['#0b1f4d', '#132b6b', '#d4af37', '#e67e22', '#9f7aea'] }],
+      labels: availableCategories,
+      datasets: [{ data: availableCategories.map((category) => counts.get(category) || 0), backgroundColor: availableCategories.map((_, index) => palette[index % palette.length]) }],
     };
-  }, [filteredEvents]);
+  }, [availableCategories, filteredEvents]);
 
   const participantMixSeries = useMemo(() => {
     const counts = { internal: 0, external: 0 };
@@ -224,7 +232,7 @@ export default function AnalyticsPage() {
     <div className="space-y-6">
       <AnalyticsFilterBar
         departments={departmentNames}
-        categories={EVENT_CATEGORIES}
+        categories={availableCategories}
         filters={filters}
         onChange={(field, value) => setFilters((current) => ({ ...current, [field]: value }))}
         onReset={() => setFilters({ startDate: '', endDate: '', department: '', category: '' })}

@@ -25,7 +25,11 @@ export default function AddParticipantsPage() {
 
   useEffect(() => {
     if (!selectedEvent) return;
-    api.get(`/participants/event/${selectedEvent}`).then(({ data }) => setParticipants(data));
+    api.get(`/participants/event/${selectedEvent}`).then(({ data }) => {
+      // backend may return array directly or an object with data
+      const rows = Array.isArray(data) ? data : data?.data || [];
+      setParticipants(rows);
+    }).catch(() => setParticipants([]));
   }, [selectedEvent]);
 
   const submitParticipant = async (event) => {
@@ -56,7 +60,7 @@ export default function AddParticipantsPage() {
       <div className="portal-panel p-6">
         <h3 className="portal-heading text-2xl">Add Participant</h3>
         <form onSubmit={submitParticipant} className="mt-6 space-y-4">
-          <select value={form.event_id} onChange={(event) => setForm((current) => ({ ...current, event_id: event.target.value }))} className="portal-input w-full">
+          <select value={form.event_id} onChange={(event) => setForm((current) => ({ ...current, event_id: event.target.value ? Number(event.target.value) : '' }))} className="portal-input w-full">
             <option value="">Select Event</option>
             {events.map((eventItem) => (
               <option key={eventItem.id} value={eventItem.id}>{eventItem.title}</option>
@@ -82,7 +86,7 @@ export default function AddParticipantsPage() {
       <div className="space-y-4">
         <div className="portal-panel p-6">
           <h3 className="portal-heading text-2xl">Event Participants</h3>
-          <select value={selectedEvent} onChange={(event) => setSelectedEvent(event.target.value)} className="portal-input mt-4 w-full">
+          <select value={selectedEvent} onChange={(event) => setSelectedEvent(event.target.value ? Number(event.target.value) : '')} className="portal-input mt-4 w-full">
             <option value="">Choose an event to view participants</option>
             {events.map((eventItem) => (
               <option key={eventItem.id} value={eventItem.id}>{eventItem.title}</option>

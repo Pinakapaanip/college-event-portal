@@ -14,38 +14,11 @@ const listEvents = asyncHandler(async (req, res) => {
     order = 'asc',
   } = req.query;
 
-  const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
-  const pageSize = Math.min(Math.max(parseInt(limit, 10) || 10, 1), 100);
-  const offset = (pageNumber - 1) * pageSize;
-  const filters = [];
-  const values = [];
-
-  if (q) {
-    values.push(`%${q.trim()}%`);
-    filters.push(`(e.title ILIKE $${values.length} OR e.venue ILIKE $${values.length} OR e.organizer ILIKE $${values.length})`);
-  }
-  if (departmentId) {
-    values.push(departmentId);
-    filters.push(`e.department_id = $${values.length}`);
-  }
-  if (category) {
-    values.push(category.trim());
-    filters.push(`e.category = $${values.length}`);
-  }
-  if (from) {
-    values.push(from);
-    filters.push(`e.date >= $${values.length}`);
-  }
-  if (to) {
-    values.push(to);
-    filters.push(`e.date <= $${values.length}`);
-  }
-
-  const whereClause = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
-  const sortColumn = ['title', 'category', 'date', 'venue', 'organizer'].includes(sort) ? `e.${sort}` : 'e.date';
-  const sortDirection = order.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
-
-  res.json(store.listEvents({ q, departmentId, category, from, to, page: pageNumber, limit: pageSize, sort, order }));
+  const result = store.listEvents({ 
+    q, departmentId, category, from, to, page, limit, sort, order 
+  });
+  
+  res.json(result);
 });
 
 const getEvent = asyncHandler(async (req, res) => {
@@ -63,30 +36,42 @@ const createEvent = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'All event fields except description are required.' });
   }
 
-  res.status(201).json(store.createEvent({ title, category, department_id, date, venue, organizer, description }));
+  const event = store.createEvent({ 
+    title, category, department_id, date, venue, organizer, description 
+  });
+  res.status(201).json(event);
 });
 
 const updateEvent = asyncHandler(async (req, res) => {
   const { title, category, department_id, date, venue, organizer, description = '' } = req.body;
-  const event = store.updateEvent(req.params.id, { title, category, department_id, date, venue, organizer, description });
-  if (!event) {
-    return res.status(404).json({ message: 'Event not found.' });
-  }
-
-  res.json(event);
+  // TODO: Implement database update
+  return res.status(501).json({ message: 'Update not yet implemented for database.' });
 });
 
 const deleteEvent = asyncHandler(async (req, res) => {
-  const deleted = store.deleteEvent(req.params.id);
-  if (!deleted) {
-    return res.status(404).json({ message: 'Event not found.' });
-  }
-
-  res.json({ message: 'Event deleted successfully.' });
+  // TODO: Implement database delete
+  return res.status(501).json({ message: 'Delete not yet implemented for database.' });
 });
 
 const exportEventsCsv = asyncHandler(async (req, res) => {
-  const csv = store.exportEventsCsv();
+  const events = store.listEvents({ limit: 10000 });
+  
+  // Generate CSV
+  const headers = ['id', 'title', 'category', 'department_name', 'date', 'venue', 'organizer'];
+  const rows = events.data.map(event => [
+    event.id,
+    event.title,
+    event.category,
+    event.department_name,
+    event.date,
+    event.venue,
+    event.organizer
+  ]);
+  
+  const csv = [
+    headers.join(','),
+    ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+  ].join('\n');
 
   res.setHeader('Content-Type', 'text/csv');
   res.setHeader('Content-Disposition', 'attachment; filename="events.csv"');

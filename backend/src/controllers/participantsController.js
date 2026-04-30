@@ -8,11 +8,21 @@ const addParticipant = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'All participant fields are required.' });
   }
 
-  res.status(201).json(store.addParticipant({ event_id, student_name, roll_no, department, year, participant_type }));
+  const participant = store.addParticipant({
+    event_id,
+    student_name,
+    roll_no,
+    department,
+    year,
+    participant_type,
+  });
+  
+  res.status(201).json(participant);
 });
 
 const getParticipantsByEvent = asyncHandler(async (req, res) => {
-  res.json(store.getParticipantsByEvent(req.params.eventId));
+  const participants = store.getParticipantsByEvent(req.params.eventId);
+  res.json(participants);
 });
 
 module.exports = { addParticipant, getParticipantsByEvent };

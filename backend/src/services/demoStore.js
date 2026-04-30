@@ -6,6 +6,7 @@ const state = {
   departments: [...demoData.departments],
   events: [...demoData.events],
   participants: [...demoData.participants],
+  participation: [...(demoData.participation || [])],
   results: [...demoData.results],
 };
 
@@ -155,11 +156,26 @@ function getDepartments() {
 }
 
 function addParticipant(payload) {
+  const eventId = Number(payload.event_id);
+  const rollNo = normalizeText(payload.roll_no);
+
+  if (state.participants.some((participant) => participant.roll_no.toLowerCase() === rollNo.toLowerCase())) {
+    const error = new Error('Roll number already exists.');
+    error.statusCode = 409;
+    throw error;
+  }
+
+  if (state.participants.some((participant) => participant.event_id === eventId && participant.roll_no.toLowerCase() === rollNo.toLowerCase())) {
+    const error = new Error('This participant is already registered for the selected event.');
+    error.statusCode = 409;
+    throw error;
+  }
+
   const participant = {
     id: nextId(state.participants),
-    event_id: Number(payload.event_id),
+    event_id: eventId,
     student_name: normalizeText(payload.student_name),
-    roll_no: normalizeText(payload.roll_no),
+    roll_no: rollNo,
     department: normalizeText(payload.department),
     year: normalizeText(payload.year),
     participant_type: payload.participant_type === 'external' ? 'external' : 'internal',
@@ -208,11 +224,12 @@ function getResults(eventId) {
 }
 
 function getSummary() {
+  const today = '2026-04-30';
   return {
     totalEvents: state.events.length,
     totalParticipants: state.participants.length,
     totalDepartments: state.departments.length,
-    upcomingEvents: state.events.filter((event) => event.date >= '2026-04-24').length,
+    upcomingEvents: state.events.filter((event) => event.date >= today).length,
   };
 }
 
