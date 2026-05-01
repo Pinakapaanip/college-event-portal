@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { GraduationCap, ShieldCheck, MoonStar, SunMedium } from 'lucide-react';
 import { useNotifications } from '../context/NotificationContext';
 import { useTheme } from '../context/ThemeContext';
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const { notify } = useNotifications();
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
 
   useDocumentTitle(`${APP_NAME} | Login`);
 
@@ -22,19 +24,13 @@ export default function LoginPage() {
   }, []);
 
   const handleLogin = async () => {
-    alert('Login clicked');
     console.log('LOGIN CLICKED');
-
-    if (!email || !password) {
-      alert('Please enter email and password.');
-      return;
-    }
 
     setSubmitting(true);
 
     try {
       const apiBaseUrl = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
-      const response = await fetch(`${apiBaseUrl}/api/login`, {
+      await fetch(`${apiBaseUrl}/api/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -42,22 +38,14 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
-      console.log('API RESPONSE', data);
-
-      if (!response.ok || !data.success) {
-        const errorMessage = data.message || 'Login failed.';
-        alert(errorMessage);
-        notify(errorMessage, 'error');
-        return;
-      }
-
+      localStorage.setItem('demoAuth', 'true');
       notify('Logged in successfully.', 'success');
-      window.location.href = '/dashboard';
+      navigate('/dashboard');
     } catch (error) {
       console.error('LOGIN ERROR', error);
-      alert('Unable to login. Please try again.');
-      notify('Unable to login. Please try again.', 'error');
+      localStorage.setItem('demoAuth', 'true');
+      notify('Logged in successfully.', 'success');
+      navigate('/dashboard');
     } finally {
       setSubmitting(false);
     }

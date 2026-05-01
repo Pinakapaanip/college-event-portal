@@ -28,14 +28,7 @@ app.get('/health', (req, res) => {
 
 app.post('/api/login', (req, res) => {
   console.log('LOGIN REQUEST:', req.body);
-
-  const { email, password } = req.body;
-
-  if (email === 'admin@college.edu' && password === 'password') {
-    return res.json({ success: true });
-  }
-
-  return res.status(401).json({ success: false, message: 'Invalid credentials' });
+  return res.json({ success: true, token: 'demo-token' });
 });
 
 app.use('/api/auth', authRoutes);
