@@ -7,7 +7,7 @@ import useDocumentTitle from '../hooks/useDocumentTitle';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('admin@college.edu');
-  const [password, setPassword] = useState('password123');
+  const [password, setPassword] = useState('password');
   const [submitting, setSubmitting] = useState(false);
   const { notify } = useNotifications();
   const { theme, toggleTheme } = useTheme();
@@ -135,7 +135,7 @@ export default function LoginPage() {
                 onChange={(event) => setPassword(event.target.value)}
                 type="password"
                 className="portal-input"
-                placeholder="password123"
+                placeholder="password"
               />
             </div>
             <button

@@ -6,7 +6,6 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const { notFound, errorHandler } = require('./middleware/error');
-const { login } = require('./controllers/authController');
 
 const authRoutes = require('./routes/authRoutes');
 const eventsRoutes = require('./routes/eventsRoutes');
@@ -28,6 +27,8 @@ app.get('/health', (req, res) => {
 });
 
 app.post('/api/login', (req, res) => {
+  console.log('LOGIN REQUEST:', req.body);
+
   const { email, password } = req.body;
 
   if (email === 'admin@college.edu' && password === 'password') {
