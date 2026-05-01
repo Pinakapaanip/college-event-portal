@@ -30,24 +30,36 @@ export default function ViewEventsPage() {
 
   const fetchEvents = async (page = 1) => {
     try {
-      const { data } = await api.get('/events', {
+      const { data } = await api.get('/api/events', {
         params: { page, q: query, departmentId, category, from, to, limit: 8 },
       });
-      setEvents(data.data || data || []);
-      setPagination(data.pagination || { page: 1, totalPages: 1 });
+      const eventList = data.data || data || [];
+      // Map field names for compatibility
+      const mapped = eventList.map((e) => ({
+        id: e.id,
+        title: e.title,
+        category: e.category,
+        department_name: e.department,
+        date: e.date,
+        venue: e.venue,
+        organizer: e.organizer,
+        department_id: e.department,
+      }));
+      setEvents(mapped);
+      setPagination({ page: 1, totalPages: 1 });
     } catch (error) {
-      // Fallback data
+      console.log('Events fetch error, using fallback', error);
       setEvents([
-        { id: 1, title: 'OJAS 2K26', category: 'Sports', department_name: 'CSE', date: '2026-05-15', venue: 'Ground', organizer: 'Sports Club' },
-        { id: 2, title: 'Tech Fest', category: 'Technology', department_name: 'ECE', date: '2026-06-10', venue: 'Auditorium', organizer: 'Tech Club' },
+        { id: 1, title: 'Technical Event 1', category: 'Technical', department_name: 'CSE', date: '2026-01-15', venue: 'Hall A', organizer: 'CSE Club', department_id: 'CSE' },
+        { id: 2, title: 'Sports Meet', category: 'Sports', department_name: 'AI', date: '2026-02-10', venue: 'Ground', organizer: 'Sports Club', department_id: 'AI' },
       ]);
       setPagination({ page: 1, totalPages: 1 });
     }
   };
 
   useEffect(() => {
-    api.get('/departments')
-      .then(({ data }) => setDepartments(data || []))
+    api.get('/api/departments')
+      .then(({ data }) => setDepartments(data?.data || data || []))
       .catch(() => setDepartments([]));
     fetchEvents();
   }, []);

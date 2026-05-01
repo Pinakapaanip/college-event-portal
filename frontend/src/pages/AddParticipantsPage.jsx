@@ -20,16 +20,18 @@ export default function AddParticipantsPage() {
   const { notify } = useNotifications();
 
   useEffect(() => {
-    api.get('/events', { params: { limit: 100 } })
+    api.get('/api/events')
       .then(({ data }) => {
-        const eventList = data.data || data || [];
+        const eventList = (data.data || data || []).map((e) => ({
+          id: e.id,
+          title: e.title,
+        }));
         setEvents(eventList);
       })
       .catch(() => {
-        // Fallback data
         setEvents([
-          { id: 1, title: 'OJAS 2K26' },
-          { id: 2, title: 'Tech Fest' },
+          { id: 1, title: 'Technical Event 1' },
+          { id: 2, title: 'Sports Meet' },
           { id: 3, title: 'Cultural Show' },
         ]);
       });
@@ -37,17 +39,18 @@ export default function AddParticipantsPage() {
 
   useEffect(() => {
     if (!selectedEvent) return;
-    api.get(`/participants/event/${selectedEvent}`)
+    api.get('/api/participants')
       .then(({ data }) => {
-        const rows = Array.isArray(data) ? data : data?.data || [];
-        setParticipants(rows);
+        const allParticipants = data.data || data || [];
+        // Filter to show sample participants
+        setParticipants(allParticipants.slice(0, 20));
       })
       .catch(() => {
         // Fallback data
         setParticipants([
-          { id: 1, student_name: 'John Doe', roll_no: 'CS001', department: 'CSE', year: '3', participant_type: 'internal' },
-          { id: 2, student_name: 'Alice Smith', roll_no: 'CS002', department: 'CSE', year: '3', participant_type: 'internal' },
-          { id: 3, student_name: 'Bob Johnson', roll_no: 'EC001', department: 'ECE', year: '2', participant_type: 'external' },
+          { id: 1, student_name: 'John Doe', roll_no: 'CS001', department: 'CSE', year: '3', participant_type: 'Internal' },
+          { id: 2, student_name: 'Alice Smith', roll_no: 'CS002', department: 'CSE', year: '3', participant_type: 'Internal' },
+          { id: 3, student_name: 'Bob Johnson', roll_no: 'EC001', department: 'ECE', year: '2', participant_type: 'External' },
         ]);
       });
   }, [selectedEvent]);

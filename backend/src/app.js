@@ -13,6 +13,7 @@ const departmentsRoutes = require('./routes/departmentsRoutes');
 const participantsRoutes = require('./routes/participantsRoutes');
 const resultsRoutes = require('./routes/resultsRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const { events, participants, participation, results, analytics } = require('./data/generateDemoData');
 
 const app = express();
 
@@ -31,85 +32,147 @@ app.post('/api/login', (req, res) => {
   return res.json({ success: true, token: 'demo-token' });
 });
 
-// Fallback demo routes - return sample data
+// Real demo data routes
 app.get('/api/events', (req, res) => {
-  res.json([
-    { id: 1, name: 'OJAS 2K26', category: 'Sports', image: 'https://images.unsplash.com/photo-1503428593586-e225b39bddfe?w=800' },
-    { id: 2, name: 'Tech Fest', category: 'Technology', image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800' },
-    { id: 3, name: 'Cultural Show', category: 'Arts', image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800' },
-  ]);
+  res.json({ data: events });
 });
 
 app.get('/api/participants', (req, res) => {
-  res.json([
-    { id: 1, name: 'John Doe', event: 'OJAS 2K26', department: 'CSE' },
-    { id: 2, name: 'Alice Smith', event: 'Tech Fest', department: 'ECE' },
-    { id: 3, name: 'Bob Johnson', event: 'Cultural Show', department: 'ME' },
-  ]);
+  res.json({ data: participants });
+});
+
+app.get('/api/participation', (req, res) => {
+  res.json({ data: participation });
 });
 
 app.get('/api/results', (req, res) => {
-  res.json([
-    { event: 'OJAS 2K26', winner: 'John Doe', department: 'CSE' },
-    { event: 'Tech Fest', winner: 'Alice Smith', department: 'ECE' },
-    { event: 'Cultural Show', winner: 'Bob Johnson', department: 'ME' },
-  ]);
+  res.json({ data: results });
 });
 
+app.get('/api/analytics', (req, res) => {
+  res.json(analytics);
+});
+
+// Dashboard routes with real calculated data
 app.get('/api/dashboard/summary', (req, res) => {
+  const totalEvents = events.length;
+  const totalParticipants = participants.length;
+  const totalDepartments = new Set(events.map((e) => e.department)).size;
+  const upcomingEvents = events.filter((e) => new Date(e.date) > new Date()).length;
+
   res.json({
-    totalEvents: 12,
-    totalParticipants: 245,
-    totalDepartments: 8,
-    upcomingEvents: 3,
+    totalEvents,
+    totalParticipants,
+    totalDepartments,
+    upcomingEvents,
   });
 });
 
 app.get('/api/dashboard/events-by-department', (req, res) => {
-  res.json([
-    { department_name: 'CSE', total: 5 },
-    { department_name: 'ECE', total: 4 },
-    { department_name: 'ME', total: 3 },
-  ]);
+  const eventsByDept = {};
+  events.forEach((e) => {
+    eventsByDept[e.department] = (eventsByDept[e.department] || 0) + 1;
+  });
+
+  const result = Object.entries(eventsByDept).map(([dept, count]) => ({
+    department_name: dept,
+    total: count,
+  }));
+
+  res.json(result);
 });
 
 app.get('/api/dashboard/monthly-trend', (req, res) => {
-  res.json([
-    { month: 'Jan', total: 2 },
-    { month: 'Feb', total: 3 },
-    { month: 'Mar', total: 4 },
-  ]);
+  const monthlyData = {};
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  events.forEach((e) => {
+    const date = new Date(e.date);
+    const monthName = monthNames[date.getMonth()];
+    monthlyData[monthName] = (monthlyData[monthName] || 0) + 1;
+  });
+
+  const result = monthNames
+    .filter((m) => monthlyData[m])
+    .map((month) => ({
+      month,
+      total: monthlyData[month],
+    }));
+
+  res.json(result);
 });
 
 app.get('/api/dashboard/category-breakdown', (req, res) => {
-  res.json([
-    { category: 'Sports', total: 5 },
-    { category: 'Technology', total: 4 },
-    { category: 'Arts', total: 3 },
-  ]);
+  const categoryData = {};
+  events.forEach((e) => {
+    categoryData[e.category] = (categoryData[e.category] || 0) + 1;
+  });
+
+  const result = Object.entries(categoryData).map(([cat, count]) => ({
+    category: cat,
+    total: count,
+  }));
+
+  res.json(result);
 });
 
 app.get('/api/dashboard/participant-mix', (req, res) => {
+  const internal = participants.filter((p) => p.type === 'Internal').length;
+  const external = participants.filter((p) => p.type === 'External').length;
+
   res.json([
-    { participant_type: 'Internal', total: 200 },
-    { participant_type: 'External', total: 45 },
+    { participant_type: 'Internal', total: internal },
+    { participant_type: 'External', total: external },
   ]);
 });
 
 app.get('/api/dashboard/top-departments', (req, res) => {
-  res.json([
-    { department_name: 'CSE', event_count: 5, participant_count: 100 },
-    { department_name: 'ECE', event_count: 4, participant_count: 80 },
-    { department_name: 'ME', event_count: 3, participant_count: 65 },
-  ]);
+  const deptStats = {};
+  events.forEach((e) => {
+    if (!deptStats[e.department]) {
+      deptStats[e.department] = { event_count: 0, participant_count: 0 };
+    }
+    deptStats[e.department].event_count++;
+  });
+
+  participants.forEach((p) => {
+    if (!deptStats[p.department]) {
+      deptStats[p.department] = { event_count: 0, participant_count: 0 };
+    }
+    deptStats[p.department].participant_count++;
+  });
+
+  const result = Object.entries(deptStats)
+    .map(([dept, stats]) => ({
+      department_name: dept,
+      ...stats,
+    }))
+    .sort((a, b) => b.event_count - a.event_count)
+    .slice(0, 5);
+
+  res.json(result);
 });
 
 app.get('/api/dashboard/winners-leaderboard', (req, res) => {
-  res.json([
-    { rank: 1, name: 'John Doe', wins: 3, department: 'CSE' },
-    { rank: 2, name: 'Alice Smith', wins: 2, department: 'ECE' },
-    { rank: 3, name: 'Bob Johnson', wins: 1, department: 'ME' },
-  ]);
+  const winnerMap = {};
+  results.forEach((r) => {
+    if (!winnerMap[r.winnerName]) {
+      winnerMap[r.winnerName] = { name: r.winnerName, department: r.department, wins: 0 };
+    }
+    if (r.rank === 1) {
+      winnerMap[r.winnerName].wins++;
+    }
+  });
+
+  const result = Object.values(winnerMap)
+    .sort((a, b) => b.wins - a.wins)
+    .slice(0, 10)
+    .map((winner, idx) => ({
+      rank: idx + 1,
+      ...winner,
+    }));
+
+  res.json(result);
 });
 
 app.use('/api/auth', authRoutes);

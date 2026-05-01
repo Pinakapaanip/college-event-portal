@@ -21,35 +21,35 @@ export default function DashboardPage() {
   useEffect(() => {
     async function loadDashboard() {
       try {
-        const [summaryRes, departmentRes, trendRes, categoryRes, mixRes, topRes, winnersRes] = await Promise.all([
-          api.get('/dashboard/summary').catch(() => ({ data: { totalEvents: 12, totalParticipants: 245, totalDepartments: 8, upcomingEvents: 3 } })),
-          api.get('/dashboard/events-by-department').catch(() => ({ data: [{ department_name: 'CSE', total: 5 }, { department_name: 'ECE', total: 4 }, { department_name: 'ME', total: 3 }] })),
-          api.get('/dashboard/monthly-trend').catch(() => ({ data: [{ month: 'Jan', total: 2 }, { month: 'Feb', total: 3 }, { month: 'Mar', total: 4 }] })),
-          api.get('/dashboard/category-breakdown').catch(() => ({ data: [{ category: 'Sports', total: 5 }, { category: 'Technology', total: 4 }, { category: 'Arts', total: 3 }] })),
-          api.get('/dashboard/participant-mix').catch(() => ({ data: [{ participant_type: 'Internal', total: 200 }, { participant_type: 'External', total: 45 }] })),
-          api.get('/dashboard/top-departments').catch(() => ({ data: [{ department_name: 'CSE', event_count: 5, participant_count: 100 }, { department_name: 'ECE', event_count: 4, participant_count: 80 }, { department_name: 'ME', event_count: 3, participant_count: 65 }] })),
-          api.get('/dashboard/winners-leaderboard').catch(() => ({ data: [{ rank: 1, name: 'John Doe', wins: 3, department: 'CSE' }, { rank: 2, name: 'Alice Smith', wins: 2, department: 'ECE' }, { rank: 3, name: 'Bob Johnson', wins: 1, department: 'ME' }] })),
+        const [analyticsRes, deptRes, trendRes, catRes, mixRes, topRes, winnersRes] = await Promise.all([
+          api.get('/dashboard/summary').catch(() => Promise.resolve({ data: { totalEvents: 30, totalParticipants: 200, totalDepartments: 4, upcomingEvents: 5 } })),
+          api.get('/dashboard/events-by-department').catch(() => Promise.resolve({ data: [{ department_name: 'CSE', total: 12 }, { department_name: 'AI', total: 8 }, { department_name: 'ECE', total: 10 }] })),
+          api.get('/dashboard/monthly-trend').catch(() => Promise.resolve({ data: [{ month: 'Jan', total: 3 }, { month: 'Feb', total: 5 }, { month: 'Mar', total: 7 }] })),
+          api.get('/dashboard/category-breakdown').catch(() => Promise.resolve({ data: [{ category: 'Technical', total: 15 }, { category: 'Cultural', total: 10 }, { category: 'Sports', total: 8 }] })),
+          api.get('/dashboard/participant-mix').catch(() => Promise.resolve({ data: [{ participant_type: 'Internal', total: 140 }, { participant_type: 'External', total: 60 }] })),
+          api.get('/dashboard/top-departments').catch(() => Promise.resolve({ data: [{ department_name: 'CSE', event_count: 12, participant_count: 80 }, { department_name: 'AI', event_count: 8, participant_count: 50 }] })),
+          api.get('/dashboard/winners-leaderboard').catch(() => Promise.resolve({ data: [{ rank: 1, name: 'Top Winner', wins: 5, department: 'CSE' }] })),
         ]);
 
-        setSummary(summaryRes.data);
+        setSummary(analyticsRes.data);
         setCharts({
-          department: departmentRes.data,
-          trend: trendRes.data,
-          category: categoryRes.data,
-          mix: mixRes.data,
-          top: topRes.data,
-          winners: winnersRes.data,
+          department: deptRes.data || [],
+          trend: trendRes.data || [],
+          category: catRes.data || [],
+          mix: mixRes.data || [],
+          top: topRes.data || [],
+          winners: winnersRes.data || [],
         });
       } catch (error) {
-        console.log('Dashboard load error, using fallback data', error);
-        setSummary({ totalEvents: 12, totalParticipants: 245, totalDepartments: 8, upcomingEvents: 3 });
+        console.log('Dashboard load error, using fallback', error);
+        setSummary({ totalEvents: 30, totalParticipants: 200, totalDepartments: 4, upcomingEvents: 5 });
         setCharts({
-          department: [{ department_name: 'CSE', total: 5 }, { department_name: 'ECE', total: 4 }, { department_name: 'ME', total: 3 }],
-          trend: [{ month: 'Jan', total: 2 }, { month: 'Feb', total: 3 }, { month: 'Mar', total: 4 }],
-          category: [{ category: 'Sports', total: 5 }, { category: 'Technology', total: 4 }, { category: 'Arts', total: 3 }],
-          mix: [{ participant_type: 'Internal', total: 200 }, { participant_type: 'External', total: 45 }],
-          top: [{ department_name: 'CSE', event_count: 5, participant_count: 100 }, { department_name: 'ECE', event_count: 4, participant_count: 80 }, { department_name: 'ME', event_count: 3, participant_count: 65 }],
-          winners: [{ rank: 1, name: 'John Doe', wins: 3, department: 'CSE' }, { rank: 2, name: 'Alice Smith', wins: 2, department: 'ECE' }, { rank: 3, name: 'Bob Johnson', wins: 1, department: 'ME' }],
+          department: [{ department_name: 'CSE', total: 12 }, { department_name: 'AI', total: 8 }, { department_name: 'ECE', total: 10 }],
+          trend: [{ month: 'Jan', total: 3 }, { month: 'Feb', total: 5 }, { month: 'Mar', total: 7 }, { month: 'Apr', total: 4 }],
+          category: [{ category: 'Technical', total: 15 }, { category: 'Cultural', total: 10 }, { category: 'Sports', total: 8 }, { category: 'Workshop', total: 7 }],
+          mix: [{ participant_type: 'Internal', total: 140 }, { participant_type: 'External', total: 60 }],
+          top: [{ department_name: 'CSE', event_count: 12, participant_count: 80 }, { department_name: 'AI', event_count: 8, participant_count: 50 }],
+          winners: [{ rank: 1, name: 'Top Winner', wins: 5, department: 'CSE' }],
         });
       }
     }
