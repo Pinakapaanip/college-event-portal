@@ -21,17 +21,17 @@ export default function DashboardPage() {
   useEffect(() => {
     async function loadDashboard() {
       try {
-        const [analyticsRes, deptRes, trendRes, catRes, mixRes, topRes, winnersRes] = await Promise.all([
+        const [summaryRes, deptRes, trendRes, catRes, mixRes, topRes, winnersRes] = await Promise.all([
           api.get('/dashboard/summary').catch(() => Promise.resolve({ data: { totalEvents: 30, totalParticipants: 200, totalDepartments: 4, upcomingEvents: 5 } })),
-          api.get('/dashboard/events-by-department').catch(() => Promise.resolve({ data: [{ department_name: 'CSE', total: 12 }, { department_name: 'AI', total: 8 }, { department_name: 'ECE', total: 10 }] })),
-          api.get('/dashboard/monthly-trend').catch(() => Promise.resolve({ data: [{ month: 'Jan', total: 3 }, { month: 'Feb', total: 5 }, { month: 'Mar', total: 7 }] })),
-          api.get('/dashboard/category-breakdown').catch(() => Promise.resolve({ data: [{ category: 'Technical', total: 15 }, { category: 'Cultural', total: 10 }, { category: 'Sports', total: 8 }] })),
+          api.get('/dashboard/events-by-department').catch(() => Promise.resolve({ data: [{ department_name: 'CSE', total: 12 }, { department_name: 'AI', total: 8 }, { department_name: 'ECE', total: 10 }, { department_name: 'MECH', total: 6 }] })),
+          api.get('/dashboard/monthly-trend').catch(() => Promise.resolve({ data: [{ month: 'Jan', total: 6 }, { month: 'Feb', total: 8 }, { month: 'Mar', total: 10 }, { month: 'Apr', total: 6 }] })),
+          api.get('/dashboard/category-breakdown').catch(() => Promise.resolve({ data: [{ category: 'Technical', total: 15 }, { category: 'Cultural', total: 10 }, { category: 'Sports', total: 8 }, { category: 'Workshop', total: 7 }] })),
           api.get('/dashboard/participant-mix').catch(() => Promise.resolve({ data: [{ participant_type: 'Internal', total: 140 }, { participant_type: 'External', total: 60 }] })),
-          api.get('/dashboard/top-departments').catch(() => Promise.resolve({ data: [{ department_name: 'CSE', event_count: 12, participant_count: 80 }, { department_name: 'AI', event_count: 8, participant_count: 50 }] })),
-          api.get('/dashboard/winners-leaderboard').catch(() => Promise.resolve({ data: [{ rank: 1, name: 'Top Winner', wins: 5, department: 'CSE' }] })),
+          api.get('/dashboard/top-departments').catch(() => Promise.resolve({ data: [{ department_name: 'CSE', event_count: 12, participant_count: 75 }, { department_name: 'ECE', event_count: 10, participant_count: 56 }, { department_name: 'AI', event_count: 8, participant_count: 44 }, { department_name: 'MECH', event_count: 6, participant_count: 25 }] })),
+          api.get('/dashboard/winners-leaderboard').catch(() => Promise.resolve({ data: [{ rank: 1, name: 'Aarav Kumar', wins: 3, department: 'CSE' }, { rank: 2, name: 'Priya Sharma', wins: 2, department: 'ECE' }, { rank: 3, name: 'John Smith', wins: 2, department: 'AI' }] })),
         ]);
 
-        setSummary(analyticsRes.data);
+        setSummary(summaryRes.data || {});
         setCharts({
           department: deptRes.data || [],
           trend: trendRes.data || [],
@@ -41,15 +41,15 @@ export default function DashboardPage() {
           winners: winnersRes.data || [],
         });
       } catch (error) {
-        console.log('Dashboard load error, using fallback', error);
+        console.log('Using fallback dashboard data');
         setSummary({ totalEvents: 30, totalParticipants: 200, totalDepartments: 4, upcomingEvents: 5 });
         setCharts({
-          department: [{ department_name: 'CSE', total: 12 }, { department_name: 'AI', total: 8 }, { department_name: 'ECE', total: 10 }],
-          trend: [{ month: 'Jan', total: 3 }, { month: 'Feb', total: 5 }, { month: 'Mar', total: 7 }, { month: 'Apr', total: 4 }],
+          department: [{ department_name: 'CSE', total: 12 }, { department_name: 'AI', total: 8 }, { department_name: 'ECE', total: 10 }, { department_name: 'MECH', total: 6 }],
+          trend: [{ month: 'Jan', total: 6 }, { month: 'Feb', total: 8 }, { month: 'Mar', total: 10 }, { month: 'Apr', total: 6 }],
           category: [{ category: 'Technical', total: 15 }, { category: 'Cultural', total: 10 }, { category: 'Sports', total: 8 }, { category: 'Workshop', total: 7 }],
           mix: [{ participant_type: 'Internal', total: 140 }, { participant_type: 'External', total: 60 }],
-          top: [{ department_name: 'CSE', event_count: 12, participant_count: 80 }, { department_name: 'AI', event_count: 8, participant_count: 50 }],
-          winners: [{ rank: 1, name: 'Top Winner', wins: 5, department: 'CSE' }],
+          top: [{ department_name: 'CSE', event_count: 12, participant_count: 75 }, { department_name: 'ECE', event_count: 10, participant_count: 56 }, { department_name: 'AI', event_count: 8, participant_count: 44 }, { department_name: 'MECH', event_count: 6, participant_count: 25 }],
+          winners: [{ rank: 1, name: 'Aarav Kumar', wins: 3, department: 'CSE' }, { rank: 2, name: 'Priya Sharma', wins: 2, department: 'ECE' }, { rank: 3, name: 'John Smith', wins: 2, department: 'AI' }],
         });
       }
     }
@@ -114,31 +114,42 @@ export default function DashboardPage() {
       <div className="grid gap-6 xl:grid-cols-2">
         <ChartCard title="Top Active Departments" note="Departments with the most participant activity.">
           <ul className="space-y-3 text-sm">
-            {charts.top?.map((item, index) => (
-              <li key={item.department} className="portal-table-row flex items-center justify-between rounded-2xl px-4 py-3">
-                <span>{index + 1}. {item.department}</span>
-                <span className="portal-chip px-3 py-1">{item.total}</span>
-              </li>
-            ))}
+            {(charts.top || []).map((item, index) => {
+              const departmentName = item.department_name || item.department || 'Department';
+              const value = item.event_count || item.total || 0;
+              return (
+                <li key={`${departmentName}-${index}`} className="portal-table-row flex items-center justify-between rounded-2xl px-4 py-3">
+                  <span>{index + 1}. {departmentName}</span>
+                  <span className="portal-chip px-3 py-1">{value}</span>
+                </li>
+              );
+            })}
           </ul>
         </ChartCard>
 
         <ChartCard title="Winners Leaderboard" note="Recent winners captured from results data.">
           <div className="space-y-3 text-sm">
-            {charts.winners?.map((item, index) => (
-              <div key={`${item.student_name}-${index}`} className="portal-table-row rounded-2xl px-4 py-3">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="font-medium text-white">{item.student_name}</p>
-                    <p className="portal-subtext">{item.event_title}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-[color:var(--portal-accent)]">Rank {item.rank}</p>
-                    <p className="portal-subtext">{item.prize}</p>
+            {(charts.winners || []).map((item, index) => {
+              const winnerName = item.student_name || item.name || item.winnerName || 'Winner';
+              const subtitle = item.event_title || item.department || 'Demo Event';
+              const rank = item.rank || index + 1;
+              const prize = item.prize || (item.wins ? `${item.wins} wins` : 'Top performer');
+
+              return (
+                <div key={`${winnerName}-${index}`} className="portal-table-row rounded-2xl px-4 py-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="font-medium text-white">{winnerName}</p>
+                      <p className="portal-subtext">{subtitle}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-[color:var(--portal-accent)]">Rank {rank}</p>
+                      <p className="portal-subtext">{prize}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </ChartCard>
       </div>

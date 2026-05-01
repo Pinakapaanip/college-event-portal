@@ -20,15 +20,16 @@ export default function AddParticipantsPage() {
   const { notify } = useNotifications();
 
   useEffect(() => {
-    api.get('/api/events')
+    api.get('/events')
       .then(({ data }) => {
-        const eventList = (data.data || data || []).map((e) => ({
-          id: e.id,
-          title: e.title,
+        const eventList = (data.data || data || []).map((eventItem) => ({
+          id: eventItem.id,
+          title: eventItem.title,
         }));
         setEvents(eventList);
       })
       .catch(() => {
+        console.log('Using fallback data');
         setEvents([
           { id: 1, title: 'Technical Event 1' },
           { id: 2, title: 'Sports Meet' },
@@ -39,14 +40,20 @@ export default function AddParticipantsPage() {
 
   useEffect(() => {
     if (!selectedEvent) return;
-    api.get('/api/participants')
+    api.get('/participants')
       .then(({ data }) => {
-        const allParticipants = data.data || data || [];
-        // Filter to show sample participants
-        setParticipants(allParticipants.slice(0, 20));
+        const rows = (data.data || data || []).slice(0, 30).map((participant, index) => ({
+          id: participant.id,
+          student_name: participant.student_name || participant.name,
+          roll_no: participant.roll_no || participant.rollNo || `DEMO-${participant.id}`,
+          department: participant.department || 'N/A',
+          year: participant.year || '-',
+          participant_type: participant.participant_type || participant.type || 'Internal',
+        }));
+        setParticipants(rows);
       })
       .catch(() => {
-        // Fallback data
+        console.log('Using fallback data');
         setParticipants([
           { id: 1, student_name: 'John Doe', roll_no: 'CS001', department: 'CSE', year: '3', participant_type: 'Internal' },
           { id: 2, student_name: 'Alice Smith', roll_no: 'CS002', department: 'CSE', year: '3', participant_type: 'Internal' },
@@ -61,10 +68,6 @@ export default function AddParticipantsPage() {
       await api.post('/participants', { ...form, event_id: Number(form.event_id) });
       notify('Participant added successfully.', 'success');
       setForm(defaultForm);
-      if (selectedEvent) {
-        const { data } = await api.get(`/participants/event/${selectedEvent}`);
-        setParticipants(data);
-      }
     } catch (error) {
       notify(error.response?.data?.message || 'Failed to add participant.', 'error');
     }

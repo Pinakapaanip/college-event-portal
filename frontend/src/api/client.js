@@ -1,7 +1,12 @@
 import axios from 'axios';
 
+function resolveApiBaseUrl() {
+  const rawBase = (import.meta.env.VITE_API_URL || 'http://localhost:5050').replace(/\/+$/, '');
+  return rawBase.endsWith('/api') ? rawBase : `${rawBase}/api`;
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5050/api',
+  baseURL: resolveApiBaseUrl(),
 });
 
 api.interceptors.request.use((config) => {
@@ -15,7 +20,6 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Only show error notifications for 401/403 auth errors, not generic failures
     if (error.response?.status === 401 || error.response?.status === 403) {
       const message = error.response?.data?.message || 'Authentication failed.';
       window.dispatchEvent(new CustomEvent('portal-notification', { detail: { type: 'error', message } }));

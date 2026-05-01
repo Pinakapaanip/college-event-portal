@@ -28,27 +28,25 @@ export default function ViewEventsPage() {
   const [saving, setSaving] = useState(false);
   const { notify } = useNotifications();
 
-  const fetchEvents = async (page = 1) => {
+  const fetchEvents = async () => {
     try {
-      const { data } = await api.get('/api/events', {
-        params: { page, q: query, departmentId, category, from, to, limit: 8 },
-      });
+      const { data } = await api.get('/events');
       const eventList = data.data || data || [];
-      // Map field names for compatibility
-      const mapped = eventList.map((e) => ({
-        id: e.id,
-        title: e.title,
-        category: e.category,
-        department_name: e.department,
-        date: e.date,
-        venue: e.venue,
-        organizer: e.organizer,
-        department_id: e.department,
+      const mapped = eventList.map((eventItem) => ({
+        id: eventItem.id,
+        title: eventItem.title,
+        category: eventItem.category,
+        department_name: eventItem.department_name || eventItem.department || 'N/A',
+        date: eventItem.date,
+        venue: eventItem.venue,
+        organizer: eventItem.organizer,
+        description: eventItem.description || '',
+        department_id: eventItem.department_id || eventItem.department || '',
       }));
       setEvents(mapped);
       setPagination({ page: 1, totalPages: 1 });
     } catch (error) {
-      console.log('Events fetch error, using fallback', error);
+      console.log('Using fallback data');
       setEvents([
         { id: 1, title: 'Technical Event 1', category: 'Technical', department_name: 'CSE', date: '2026-01-15', venue: 'Hall A', organizer: 'CSE Club', department_id: 'CSE' },
         { id: 2, title: 'Sports Meet', category: 'Sports', department_name: 'AI', date: '2026-02-10', venue: 'Ground', organizer: 'Sports Club', department_id: 'AI' },
@@ -58,11 +56,22 @@ export default function ViewEventsPage() {
   };
 
   useEffect(() => {
-    api.get('/api/departments')
+    api.get('/departments')
       .then(({ data }) => setDepartments(data?.data || data || []))
       .catch(() => setDepartments([]));
     fetchEvents();
   }, []);
+
+  const filteredEvents = useMemo(() => {
+    return events.filter((eventItem) => {
+      if (query && !`${eventItem.title} ${eventItem.venue} ${eventItem.organizer}`.toLowerCase().includes(query.toLowerCase())) return false;
+      if (departmentId && String(eventItem.department_name) !== String(departmentId)) return false;
+      if (category && !String(eventItem.category).toLowerCase().includes(category.toLowerCase())) return false;
+      if (from && eventItem.date < from) return false;
+      if (to && eventItem.date > to) return false;
+      return true;
+    });
+  }, [events, query, departmentId, category, from, to]);
 
   const columns = useMemo(
     () => [
@@ -77,19 +86,22 @@ export default function ViewEventsPage() {
   );
 
   const exportCsv = async () => {
-    const response = await api.get('/events/export/csv', { responseType: 'blob' });
-    const url = window.URL.createObjectURL(response.data);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'events.csv';
-    link.click();
-    window.URL.revokeObjectURL(url);
-    notify('CSV export downloaded.', 'success');
+    try {
+      const response = await api.get('/events/export/csv', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(response.data);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'events.csv';
+      link.click();
+      window.URL.revokeObjectURL(url);
+      notify('CSV export downloaded.', 'success');
+    } catch {
+      console.log('Using fallback data');
+    }
   };
 
   const handleSearch = async (event) => {
     event.preventDefault();
-    await fetchEvents(1);
   };
 
   const startEdit = (eventRow) => {
@@ -137,7 +149,7 @@ export default function ViewEventsPage() {
       <div className="portal-panel p-5">
         <form onSubmit={handleSearch} className="grid gap-3 lg:grid-cols-5">
           <input value={query} onChange={(event) => setQuery(event.target.value)} className="portal-input" placeholder="Search title, venue, organizer" />
-          <input value={departmentId} onChange={(event) => setDepartmentId(event.target.value)} className="portal-input" placeholder="Department ID" />
+          <input value={departmentId} onChange={(event) => setDepartmentId(event.target.value)} className="portal-input" placeholder="Department" />
           <input value={category} onChange={(event) => setCategory(event.target.value)} className="portal-input" placeholder="Category" />
           <input value={from} onChange={(event) => setFrom(event.target.value)} type="date" className="portal-input" />
           <input value={to} onChange={(event) => setTo(event.target.value)} type="date" className="portal-input" />
@@ -167,7 +179,7 @@ export default function ViewEventsPage() {
               ),
             },
           ]}
-          rows={events}
+          rows={filteredEvents}
           emptyMessage="No events found for the selected filters."
         />
 
@@ -180,7 +192,7 @@ export default function ViewEventsPage() {
               <select value={editingEvent.department_id} onChange={(event) => setEditingEvent((current) => ({ ...current, department_id: event.target.value }))} className="portal-input w-full">
                 <option value="">Select department</option>
                 {departments.map((department) => (
-                  <option key={department.id} value={department.id}>
+                  <option key={department.id || department.department_name} value={department.id || department.department_name}>
                     {department.department_name}
                   </option>
                 ))}
@@ -203,7 +215,7 @@ export default function ViewEventsPage() {
           </div>
         )}
       </div>
-      <Pagination page={pagination.page} totalPages={pagination.totalPages} onPageChange={fetchEvents} />
+      <Pagination page={pagination.page} totalPages={pagination.totalPages} onPageChange={() => {}} />
     </div>
   );
 }

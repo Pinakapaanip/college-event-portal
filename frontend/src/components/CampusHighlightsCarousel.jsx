@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 
 const slides = [
-  { title: 'OJAS 2K26', src: 'https://images.unsplash.com/photo-1503428593586-e225b39bddfe?w=1200&h=220&fit=crop' },
-  { title: 'School of Law', src: 'https://images.unsplash.com/photo-1541339907198-e83de08ba9ad?w=1200&h=220&fit=crop' },
-  { title: 'Indian Art Event', src: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1200&h=220&fit=crop' },
-  { title: 'Chanakya Campus', src: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1200&h=220&fit=crop' },
-  { title: 'Samyuti Celebration', src: 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=1200&h=220&fit=crop' },
+  { title: 'OJAS 2K26', src: '/images-scroll/Screenshot%202026-04-25%20123909.png' },
+  { title: 'School of Law', src: '/images-scroll/Screenshot%202026-04-25%20124519.png' },
+  { title: 'Indian Art Event', src: '/images-scroll/Screenshot%202026-04-25%20124405.png' },
+  { title: 'Chanakya Campus', src: '/images-scroll/Screenshot%202026-04-25%20124417.png' },
+  { title: 'Samyuti Celebration', src: '/images-scroll/Screenshot%202026-04-25%20125031.png' },
 ];
 
 export default function CampusHighlightsCarousel() {
