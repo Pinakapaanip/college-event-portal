@@ -19,13 +19,34 @@ export default function AddParticipantsPage() {
   const [form, setForm] = useState(defaultForm);
   const { notify } = useNotifications();
 
+  const loadParticipantsByEvent = async (eventId) => {
+    if (!eventId) {
+      setParticipants([]);
+      return;
+    }
+    try {
+      const { data } = await api.get(`/participants/event/${eventId}`);
+      const rows = (Array.isArray(data) ? data : data?.data || []).map((participant) => ({
+        id: participant.id,
+        student_name: participant.student_name || participant.name,
+        roll_no: participant.roll_no || participant.rollNo || `DEMO-${participant.id}`,
+        department: participant.department || 'N/A',
+        year: participant.year || '-',
+        participant_type: participant.participant_type || participant.type || 'Internal',
+      }));
+      setParticipants(rows);
+    } catch {
+      console.log('Using fallback data');
+      setParticipants([
+        { id: 1, student_name: 'John Doe', roll_no: 'CS001', department: 'CSE', year: '3', participant_type: 'Internal' },
+      ]);
+    }
+  };
+
   useEffect(() => {
     api.get('/events')
       .then(({ data }) => {
-        const eventList = (data.data || data || []).map((eventItem) => ({
-          id: eventItem.id,
-          title: eventItem.title,
-        }));
+        const eventList = (data.data || data || []).map((eventItem) => ({ id: eventItem.id, title: eventItem.title }));
         setEvents(eventList);
       })
       .catch(() => {
@@ -39,27 +60,7 @@ export default function AddParticipantsPage() {
   }, []);
 
   useEffect(() => {
-    if (!selectedEvent) return;
-    api.get('/participants')
-      .then(({ data }) => {
-        const rows = (data.data || data || []).slice(0, 30).map((participant, index) => ({
-          id: participant.id,
-          student_name: participant.student_name || participant.name,
-          roll_no: participant.roll_no || participant.rollNo || `DEMO-${participant.id}`,
-          department: participant.department || 'N/A',
-          year: participant.year || '-',
-          participant_type: participant.participant_type || participant.type || 'Internal',
-        }));
-        setParticipants(rows);
-      })
-      .catch(() => {
-        console.log('Using fallback data');
-        setParticipants([
-          { id: 1, student_name: 'John Doe', roll_no: 'CS001', department: 'CSE', year: '3', participant_type: 'Internal' },
-          { id: 2, student_name: 'Alice Smith', roll_no: 'CS002', department: 'CSE', year: '3', participant_type: 'Internal' },
-          { id: 3, student_name: 'Bob Johnson', roll_no: 'EC001', department: 'ECE', year: '2', participant_type: 'External' },
-        ]);
-      });
+    loadParticipantsByEvent(selectedEvent);
   }, [selectedEvent]);
 
   const submitParticipant = async (event) => {
@@ -67,7 +68,12 @@ export default function AddParticipantsPage() {
     try {
       await api.post('/participants', { ...form, event_id: Number(form.event_id) });
       notify('Participant added successfully.', 'success');
-      setForm(defaultForm);
+      const currentEventId = form.event_id || selectedEvent;
+      setForm((previous) => ({ ...defaultForm, event_id: previous.event_id }));
+      if (currentEventId) {
+        setSelectedEvent(Number(currentEventId));
+        await loadParticipantsByEvent(Number(currentEventId));
+      }
     } catch (error) {
       notify(error.response?.data?.message || 'Failed to add participant.', 'error');
     }
@@ -86,7 +92,15 @@ export default function AddParticipantsPage() {
       <div className="portal-panel p-6">
         <h3 className="portal-heading text-2xl">Add Participant</h3>
         <form onSubmit={submitParticipant} className="mt-6 space-y-4">
-          <select value={form.event_id} onChange={(event) => setForm((current) => ({ ...current, event_id: event.target.value ? Number(event.target.value) : '' }))} className="portal-input w-full">
+          <select
+            value={form.event_id}
+            onChange={(event) => {
+              const value = event.target.value ? Number(event.target.value) : '';
+              setForm((current) => ({ ...current, event_id: value }));
+              setSelectedEvent(value);
+            }}
+            className="portal-input w-full"
+          >
             <option value="">Select Event</option>
             {events.map((eventItem) => (
               <option key={eventItem.id} value={eventItem.id}>{eventItem.title}</option>

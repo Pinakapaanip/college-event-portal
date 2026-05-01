@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import api from '../api/client';
 import { useNotifications } from '../context/NotificationContext';
 
@@ -13,14 +12,29 @@ const defaultForm = {
   description: '',
 };
 
+const fallbackDepartments = [
+  { id: 1, department_name: 'CSE' },
+  { id: 2, department_name: 'AI' },
+  { id: 3, department_name: 'ECE' },
+  { id: 4, department_name: 'MECH' },
+];
+
 export default function AddEventPage() {
   const [form, setForm] = useState(defaultForm);
   const [saving, setSaving] = useState(false);
-  const [departments, setDepartments] = useState([]);
+  const [departments, setDepartments] = useState(fallbackDepartments);
   const { notify } = useNotifications();
 
   useEffect(() => {
-    api.get('/departments').then(({ data }) => setDepartments(data));
+    api.get('/departments')
+      .then(({ data }) => {
+        const rows = Array.isArray(data) ? data : data?.data || fallbackDepartments;
+        setDepartments(rows.length ? rows : fallbackDepartments);
+      })
+      .catch(() => {
+        console.log('Using fallback data');
+        setDepartments(fallbackDepartments);
+      });
   }, []);
 
   const updateField = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
