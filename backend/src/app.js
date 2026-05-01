@@ -39,6 +39,23 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'College Event Statistics Portal API', mode: 'database' });
 });
 
+function getDatabaseErrorDetails(error) {
+  const nestedErrors = Array.isArray(error?.errors)
+    ? error.errors.map((item) => item.message || item.code || String(item)).filter(Boolean)
+    : [];
+  const message = error?.message || nestedErrors[0] || error?.code || 'Unknown database connection error';
+
+  return {
+    error: message,
+    code: error?.code,
+    errno: error?.errno,
+    syscall: error?.syscall,
+    address: error?.address,
+    port: error?.port,
+    details: nestedErrors,
+  };
+}
+
 app.get('/test-db', async (req, res) => {
   try {
     const result = await pool.query('SELECT NOW()');
@@ -52,7 +69,7 @@ app.get('/test-db', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Database connection failed',
-      error: error.message,
+      ...getDatabaseErrorDetails(error),
     });
   }
 });

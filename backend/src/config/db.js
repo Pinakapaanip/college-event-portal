@@ -16,6 +16,7 @@ function isLocalDatabaseUrl(connectionString) {
 const pool = new Pool({
   connectionString: databaseUrl,
   ssl: databaseUrl && !isLocalDatabaseUrl(databaseUrl) ? { rejectUnauthorized: false } : false,
+  connectionTimeoutMillis: 10000,
 });
 
 module.exports = pool;
