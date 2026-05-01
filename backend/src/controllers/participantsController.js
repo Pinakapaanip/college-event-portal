@@ -22,22 +22,24 @@ const listParticipants = asyncHandler(async (req, res) => {
 });
 
 const addParticipant = asyncHandler(async (req, res) => {
+  console.log('BODY:', req.body);
   const { event_id, student_name, roll_no, department, year, participant_type } = req.body;
+  const normalizedType = String(participant_type || '').toLowerCase();
 
-  if (!event_id || !student_name || !roll_no || !department || !year || !participant_type) {
+  if (!event_id || !student_name || !roll_no || !department || !year || !normalizedType) {
     return res.status(400).json({ message: 'All participant fields are required.' });
   }
 
   const participant = await db.addParticipant({
     event_id: Number(event_id),
-    student_name,
-    roll_no,
-    department,
-    year,
-    participant_type,
+    student_name: String(student_name).trim(),
+    roll_no: String(roll_no).trim(),
+    department: String(department).trim(),
+    year: String(year).trim(),
+    participant_type: normalizedType,
   });
 
-  res.status(201).json({ success: true, participant });
+  res.status(201).json({ success: true, data: participant });
 });
 
 const getParticipantsByEvent = asyncHandler(async (req, res) => {

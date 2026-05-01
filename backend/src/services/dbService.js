@@ -5,6 +5,26 @@ const pool = require('../config/db');
  * Replaces the in-memory demoStore with production-ready database operations
  */
 
+function normalizeDatabaseError(error) {
+  if (error.statusCode) return error;
+
+  if (error.code === '23503') {
+    error.statusCode = 400;
+    error.message = 'Selected event or participant does not exist.';
+  } else if (error.code === '23514') {
+    error.statusCode = 400;
+    error.message = 'Submitted value does not match the allowed database values.';
+  } else if (error.code === '23505') {
+    error.statusCode = 409;
+    error.message = 'A matching record already exists.';
+  } else if (error.code === '22P02') {
+    error.statusCode = 400;
+    error.message = 'Invalid numeric value submitted.';
+  }
+
+  return error;
+}
+
 // ===== DEPARTMENTS =====
 
 async function getAllDepartments() {
@@ -156,14 +176,13 @@ async function getParticipantsByEvent(eventId) {
 async function addParticipant(payload) {
   const { event_id, student_name, roll_no, department, year, participant_type } = payload;
   try {
-    // Check for duplicate roll_no
     const existing = await pool.query(
-      'SELECT id FROM participants WHERE roll_no = $1',
-      [roll_no]
+      'SELECT id FROM participants WHERE event_id = $1 AND LOWER(roll_no) = LOWER($2)',
+      [event_id, roll_no]
     );
 
     if (existing.rows.length > 0) {
-      const error = new Error('Participant with this roll number already exists');
+      const error = new Error('Participant with this roll number already exists for this event');
       error.statusCode = 409;
       throw error;
     }
@@ -177,7 +196,7 @@ async function addParticipant(payload) {
     return result.rows[0];
   } catch (error) {
     console.error('Error adding participant:', error);
-    throw error;
+    throw normalizeDatabaseError(error);
   }
 }
 
@@ -249,7 +268,9 @@ async function addResult(payload) {
     );
 
     if (existing.rows.length > 0) {
-      throw new Error('Result with this rank already exists for this event');
+      const error = new Error('Result with this rank already exists for this event');
+      error.statusCode = 409;
+      throw error;
     }
 
     const result = await pool.query(
@@ -261,7 +282,7 @@ async function addResult(payload) {
     return result.rows[0];
   } catch (error) {
     console.error('Error adding result:', error);
-    throw error;
+    throw normalizeDatabaseError(error);
   }
 }
 

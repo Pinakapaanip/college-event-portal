@@ -29,6 +29,12 @@ const fallbackDepartments = [
 
 const selectClassName = 'w-full p-3 rounded-lg bg-[#020617] text-white border border-gray-600 focus:outline-none';
 
+function apiUrl(path) {
+  const base = (import.meta.env.VITE_API_URL || 'http://localhost:5050').replace(/\/+$/, '');
+  const apiBase = base.endsWith('/api') ? base : `${base}/api`;
+  return `${apiBase}${path}`;
+}
+
 export default function AddParticipantsPage() {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState('');
@@ -89,8 +95,33 @@ export default function AddParticipantsPage() {
 
   const submitParticipant = async (event) => {
     event.preventDefault();
+    const payload = {
+      event_id: Number(form.event_id),
+      student_name: form.student_name.trim(),
+      roll_no: form.roll_no.trim(),
+      department: form.department,
+      year: form.year.trim(),
+      participant_type: form.participant_type.toLowerCase(),
+    };
+
+    console.log('SENDING:', payload);
+
     try {
-      await api.post('/participants', { ...form, event_id: Number(form.event_id) });
+      const response = await fetch(apiUrl('/participants'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+
+      console.log('RESPONSE:', data);
+
+      if (!response.ok) {
+        throw new Error(data.message || data.error || 'Failed to add participant');
+      }
+
       notify('Participant added successfully.', 'success');
       const currentEventId = form.event_id || selectedEvent;
       setForm((previous) => ({ ...defaultForm, event_id: previous.event_id }));
@@ -99,7 +130,8 @@ export default function AddParticipantsPage() {
         await loadParticipantsByEvent(Number(currentEventId));
       }
     } catch (error) {
-      notify(error.response?.data?.message || 'Failed to add participant.', 'error');
+      console.error(error);
+      notify(`Failed to add participant: ${error.message}`, 'error');
     }
   };
 

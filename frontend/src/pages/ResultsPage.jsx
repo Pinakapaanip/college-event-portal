@@ -27,6 +27,12 @@ const fallbackDepartments = [
 
 const selectClassName = 'w-full p-3 rounded-lg bg-[#020617] text-white border border-gray-600 focus:outline-none';
 
+function apiUrl(path) {
+  const base = (import.meta.env.VITE_API_URL || 'http://localhost:5050').replace(/\/+$/, '');
+  const apiBase = base.endsWith('/api') ? base : `${base}/api`;
+  return `${apiBase}${path}`;
+}
+
 export default function ResultsPage() {
   const [events, setEvents] = useState([]);
   const [participants, setParticipants] = useState([]);
@@ -91,18 +97,37 @@ export default function ResultsPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const payload = {
+      event_id: Number(form.event_id),
+      participant_id: Number(form.participant_id),
+      rank: Number(form.rank),
+      prize: form.prize.trim(),
+    };
+
+    console.log('SENDING:', payload);
+
     try {
-      await api.post('/results', {
-        ...form,
-        event_id: Number(form.event_id),
-        participant_id: Number(form.participant_id),
-        rank: Number(form.rank),
+      const response = await fetch(apiUrl('/results'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
       });
+      const data = await response.json();
+
+      console.log('RESPONSE:', data);
+
+      if (!response.ok) {
+        throw new Error(data.message || data.error || 'Failed to add result');
+      }
+
       notify('Result added successfully.', 'success');
       setForm((previous) => ({ ...defaultForm, event_id: previous.event_id }));
       await loadResults(form.event_id || eventId);
     } catch (error) {
-      notify(error.response?.data?.message || 'Failed to add result.', 'error');
+      console.error(error);
+      notify(`Failed to add result: ${error.message}`, 'error');
     }
   };
 
