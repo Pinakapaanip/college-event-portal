@@ -2,6 +2,42 @@ const asyncHandler = require('../utils/asyncHandler');
 const db = require('../services/dbService');
 const pool = require('../config/db');
 
+async function ensureDepartment(name) {
+  const departmentName = String(name || 'General').trim() || 'General';
+  const result = await pool.query(
+    `INSERT INTO departments (department_name)
+     VALUES ($1)
+     ON CONFLICT (department_name) DO UPDATE SET department_name = EXCLUDED.department_name
+     RETURNING id`,
+    [departmentName]
+  );
+  return result.rows[0].id;
+}
+
+async function ensureEventExists(eventId, departmentName) {
+  const existing = await pool.query('SELECT id FROM events WHERE id = $1', [eventId]);
+  if (existing.rows[0]) return;
+
+  const departmentId = await ensureDepartment(departmentName);
+  await pool.query(
+    `INSERT INTO events (id, title, category, department_id, date, venue, organizer, description)
+     VALUES ($1, $2, $3, $4, CURRENT_DATE, $5, $6, $7)
+     ON CONFLICT (id) DO NOTHING`,
+    [
+      eventId,
+      `Event ${eventId}`,
+      'General',
+      departmentId,
+      'TBA',
+      'System',
+      'Auto-created so participant data can be saved.',
+    ]
+  );
+  await pool.query(
+    `SELECT setval(pg_get_serial_sequence('events', 'id'), COALESCE((SELECT MAX(id) FROM events), 1))`
+  );
+}
+
 const listParticipants = asyncHandler(async (req, res) => {
   const eventId = req.query.eventId;
 
@@ -46,6 +82,7 @@ const addParticipant = asyncHandler(async (req, res) => {
   ];
 
   try {
+    await ensureEventExists(Number(mappedEventId), department);
     const result = await pool.query(query, values);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {

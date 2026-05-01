@@ -17,12 +17,19 @@ const resultsRoutes = require('./routes/resultsRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 
 const app = express();
+const allowedOrigins = [
+  'https://college-event-portal-delta.vercel.app',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  ...(process.env.CLIENT_ORIGIN || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+];
 
 app.use(helmet());
 app.use(cors({
-  origin: [
-    'https://college-event-portal-delta.vercel.app',
-  ],
+  origin: allowedOrigins,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));

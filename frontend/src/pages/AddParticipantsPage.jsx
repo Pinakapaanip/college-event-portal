@@ -42,7 +42,8 @@ const fetchWithRetry = async (url, options, retries = 2) => {
 };
 
 function apiUrl(path) {
-  return `${import.meta.env.VITE_API_URL}${path}`;
+  const base = (import.meta.env.VITE_API_URL || 'http://localhost:5050').replace(/\/+$/, '');
+  return `${base}${path}`;
 }
 
 export default function AddParticipantsPage() {
@@ -70,30 +71,27 @@ export default function AddParticipantsPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      try {
-        const [eventsResponse, participantsResponse, departmentsResponse] = await Promise.all([
-          api.get('/events'),
-          api.get('/participants'),
-          api.get('/departments'),
-        ]);
-        const loadedEvents = eventsResponse.data?.data || eventsResponse.data || [];
-        const loadedParticipants = participantsResponse.data?.data || participantsResponse.data || [];
-        const loadedDepartments = departmentsResponse.data?.data || departmentsResponse.data || [];
+      const [eventsResponse, participantsResponse, departmentsResponse] = await Promise.allSettled([
+        api.get('/events'),
+        api.get('/participants'),
+        api.get('/departments'),
+      ]);
+      const loadedEvents = eventsResponse.status === 'fulfilled'
+        ? eventsResponse.value.data?.data || eventsResponse.value.data || []
+        : fallbackEvents;
+      const loadedParticipants = participantsResponse.status === 'fulfilled'
+        ? participantsResponse.value.data?.data || participantsResponse.value.data || []
+        : fallbackParticipants;
+      const loadedDepartments = departmentsResponse.status === 'fulfilled'
+        ? departmentsResponse.value.data?.data || departmentsResponse.value.data || []
+        : fallbackDepartments;
 
-        setEvents(loadedEvents);
-        setParticipants(loadedParticipants);
-        setDepartments(loadedDepartments);
-        console.log('EVENTS', loadedEvents);
-        console.log('PARTICIPANTS', loadedParticipants);
-        console.log('DEPARTMENTS', loadedDepartments);
-      } catch {
-        setEvents(fallbackEvents);
-        setParticipants(fallbackParticipants);
-        setDepartments(fallbackDepartments);
-        console.log('EVENTS', fallbackEvents);
-        console.log('PARTICIPANTS', fallbackParticipants);
-        console.log('DEPARTMENTS', fallbackDepartments);
-      }
+      setEvents(loadedEvents);
+      setParticipants(loadedParticipants);
+      setDepartments(loadedDepartments);
+      console.log('EVENTS', loadedEvents);
+      console.log('PARTICIPANTS', loadedParticipants);
+      console.log('DEPARTMENTS', loadedDepartments);
     };
 
     loadData();
@@ -106,7 +104,7 @@ export default function AddParticipantsPage() {
   const submitParticipant = async (event) => {
     event.preventDefault();
     const payload = {
-      event_id: Number(form.event_id),
+      eventId: Number(form.event_id),
       student_name: form.student_name.trim(),
       roll_no: form.roll_no.trim(),
       department: form.department,

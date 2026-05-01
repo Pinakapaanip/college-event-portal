@@ -40,7 +40,8 @@ const fetchWithRetry = async (url, options, retries = 2) => {
 };
 
 function apiUrl(path) {
-  return `${import.meta.env.VITE_API_URL}${path}`;
+  const base = (import.meta.env.VITE_API_URL || 'http://localhost:5050').replace(/\/+$/, '');
+  return `${base}${path}`;
 }
 
 export default function ResultsPage() {
@@ -108,8 +109,8 @@ export default function ResultsPage() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const payload = {
-      event_id: Number(form.event_id),
-      participant_id: Number(form.participant_id),
+      eventId: Number(form.event_id),
+      participantId: Number(form.participant_id),
       rank: Number(form.rank),
       prize: form.prize.trim(),
     };

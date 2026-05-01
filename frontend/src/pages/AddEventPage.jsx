@@ -29,6 +29,23 @@ const fallbackDepartments = [
 
 const selectClassName = 'w-full p-3 rounded-lg bg-[#020617] text-white border border-gray-600 focus:outline-none';
 
+const fetchWithRetry = async (url, options, retries = 2) => {
+  try {
+    return await fetch(url, options);
+  } catch (err) {
+    if (retries > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      return fetchWithRetry(url, options, retries - 1);
+    }
+    throw err;
+  }
+};
+
+function apiUrl(path) {
+  const base = (import.meta.env.VITE_API_URL || 'http://localhost:5050').replace(/\/+$/, '');
+  return `${base}${path}`;
+}
+
 export default function AddEventPage() {
   const [form, setForm] = useState(defaultForm);
   const [saving, setSaving] = useState(false);
@@ -39,30 +56,28 @@ export default function AddEventPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      try {
-        const [eventsResponse, participantsResponse, departmentsResponse] = await Promise.all([
-          api.get('/events'),
-          api.get('/participants'),
-          api.get('/departments'),
-        ]);
-        const loadedEvents = eventsResponse.data?.data || eventsResponse.data || [];
-        const loadedParticipants = participantsResponse.data?.data || participantsResponse.data || [];
-        const loadedDepartments = departmentsResponse.data?.data || departmentsResponse.data || [];
+      const [eventsResponse, participantsResponse, departmentsResponse] = await Promise.allSettled([
+        api.get('/events'),
+        api.get('/participants'),
+        api.get('/departments'),
+      ]);
 
-        setEvents(loadedEvents);
-        setParticipants(loadedParticipants);
-        setDepartments(loadedDepartments);
-        console.log('EVENTS', loadedEvents);
-        console.log('PARTICIPANTS', loadedParticipants);
-        console.log('DEPARTMENTS', loadedDepartments);
-      } catch {
-        setEvents(fallbackEvents);
-        setParticipants(fallbackParticipants);
-        setDepartments(fallbackDepartments);
-        console.log('EVENTS', fallbackEvents);
-        console.log('PARTICIPANTS', fallbackParticipants);
-        console.log('DEPARTMENTS', fallbackDepartments);
-      }
+      const loadedEvents = eventsResponse.status === 'fulfilled'
+        ? eventsResponse.value.data?.data || eventsResponse.value.data || []
+        : fallbackEvents;
+      const loadedParticipants = participantsResponse.status === 'fulfilled'
+        ? participantsResponse.value.data?.data || participantsResponse.value.data || []
+        : fallbackParticipants;
+      const loadedDepartments = departmentsResponse.status === 'fulfilled'
+        ? departmentsResponse.value.data?.data || departmentsResponse.value.data || []
+        : fallbackDepartments;
+
+      setEvents(loadedEvents);
+      setParticipants(loadedParticipants);
+      setDepartments(loadedDepartments);
+      console.log('EVENTS', loadedEvents);
+      console.log('PARTICIPANTS', loadedParticipants);
+      console.log('DEPARTMENTS', loadedDepartments);
     };
 
     loadData();
@@ -73,12 +88,37 @@ export default function AddEventPage() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setSaving(true);
+    const selectedDepartment = departments.find((department) => String(department.id) === String(form.department_id));
+    const payload = {
+      ...form,
+      department_id: form.department_id,
+      department: selectedDepartment?.department_name || form.department_id,
+    };
+
+    console.log('API URL:', import.meta.env.VITE_API_URL);
+    console.log('SENDING EVENT:', payload);
+
     try {
-      await api.post('/events', form);
+      const response = await fetchWithRetry(apiUrl('/api/events'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+
+      console.log('EVENT RESPONSE:', data);
+
+      if (!response.ok) {
+        throw new Error(data.message || data.error || 'Failed to create event');
+      }
+
       notify('Event created successfully.', 'success');
       setForm(defaultForm);
     } catch (error) {
-      notify(error.response?.data?.message || 'Failed to create event.', 'error');
+      console.error(error);
+      notify(`Failed to create event: ${error.message}`, 'error');
     } finally {
       setSaving(false);
     }
