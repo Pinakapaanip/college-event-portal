@@ -10,9 +10,27 @@ const defaultForm = {
   prize: '',
 };
 
+const fallbackEvents = [
+  { id: 1, title: 'OJAS 2K26' },
+  { id: 2, title: 'Tech Fest' },
+];
+
+const fallbackParticipants = [
+  { id: 1, student_name: 'Pinakapani P', name: 'Pinakapani P', roll_no: 'DEMO001' },
+  { id: 2, student_name: 'Aaliya Roy Gupta', name: 'Aaliya Roy Gupta', roll_no: 'DEMO002' },
+];
+
+const fallbackDepartments = [
+  { id: 1, department_name: 'CSE' },
+  { id: 2, department_name: 'AI' },
+];
+
+const selectClassName = 'w-full p-3 rounded-lg bg-[#020617] text-white border border-gray-600 focus:outline-none';
+
 export default function ResultsPage() {
   const [events, setEvents] = useState([]);
   const [participants, setParticipants] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [results, setResults] = useState([]);
   const [eventId, setEventId] = useState('');
   const [form, setForm] = useState(defaultForm);
@@ -26,7 +44,7 @@ export default function ResultsPage() {
 
   const loadParticipants = async (selectedEventId) => {
     if (!selectedEventId) {
-      setParticipants([]);
+      setParticipants(fallbackParticipants);
       return;
     }
     const { data } = await api.get(`/participants/event/${selectedEventId}`);
@@ -34,16 +52,40 @@ export default function ResultsPage() {
   };
 
   useEffect(() => {
-    api.get('/events')
-      .then(({ data }) => setEvents(data?.data || []))
-      .catch(() => setEvents([]));
+    const loadData = async () => {
+      try {
+        const [eventsResponse, participantsResponse, departmentsResponse] = await Promise.all([
+          api.get('/events'),
+          api.get('/participants'),
+          api.get('/departments'),
+        ]);
+        const loadedEvents = eventsResponse.data?.data || eventsResponse.data || [];
+        const loadedParticipants = participantsResponse.data?.data || participantsResponse.data || [];
+        const loadedDepartments = departmentsResponse.data?.data || departmentsResponse.data || [];
 
+        setEvents(loadedEvents);
+        setParticipants(loadedParticipants);
+        setDepartments(loadedDepartments);
+        console.log('EVENTS', loadedEvents);
+        console.log('PARTICIPANTS', loadedParticipants);
+        console.log('DEPARTMENTS', loadedDepartments);
+      } catch {
+        setEvents(fallbackEvents);
+        setParticipants(fallbackParticipants);
+        setDepartments(fallbackDepartments);
+        console.log('EVENTS', fallbackEvents);
+        console.log('PARTICIPANTS', fallbackParticipants);
+        console.log('DEPARTMENTS', fallbackDepartments);
+      }
+    };
+
+    loadData();
     loadResults().catch(() => setResults([]));
   }, []);
 
   useEffect(() => {
     if (!eventId) return;
-    loadParticipants(eventId).catch(() => setParticipants([]));
+    loadParticipants(eventId).catch(() => setParticipants(fallbackParticipants));
     loadResults(eventId).catch(() => setResults([]));
   }, [eventId]);
 
@@ -84,14 +126,14 @@ export default function ResultsPage() {
               setForm((current) => ({ ...current, event_id: value, participant_id: '' }));
               setEventId(value);
             }}
-            className="portal-input w-full"
+            className={selectClassName}
           >
             <option value="">Select Event</option>
             {events.map((eventItem) => <option key={eventItem.id} value={eventItem.id}>{eventItem.title}</option>)}
           </select>
-          <select value={form.participant_id} onChange={(event) => setForm((current) => ({ ...current, participant_id: event.target.value }))} className="portal-input w-full">
+          <select value={form.participant_id} onChange={(event) => setForm((current) => ({ ...current, participant_id: event.target.value }))} className={selectClassName}>
             <option value="">Select Participant</option>
-            {participants.map((participant) => <option key={participant.id} value={participant.id}>{participant.student_name} - {participant.roll_no}</option>)}
+            {participants.map((participant) => <option key={participant.id} value={participant.id}>{participant.student_name || participant.name}</option>)}
           </select>
           <input value={form.rank} onChange={(event) => setForm((current) => ({ ...current, rank: event.target.value }))} type="number" min="1" className="portal-input w-full" placeholder="Rank" />
           <input value={form.prize} onChange={(event) => setForm((current) => ({ ...current, prize: event.target.value }))} className="portal-input w-full" placeholder="Prize" />

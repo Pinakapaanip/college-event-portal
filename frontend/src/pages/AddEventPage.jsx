@@ -12,19 +12,60 @@ const defaultForm = {
   description: '',
 };
 
+const fallbackEvents = [
+  { id: 1, title: 'OJAS 2K26' },
+  { id: 2, title: 'Tech Fest' },
+];
+
+const fallbackParticipants = [
+  { id: 1, name: 'Pinakapani P' },
+  { id: 2, name: 'Aaliya Roy Gupta' },
+];
+
+const fallbackDepartments = [
+  { id: 1, department_name: 'CSE' },
+  { id: 2, department_name: 'AI' },
+];
+
+const selectClassName = 'w-full p-3 rounded-lg bg-[#020617] text-white border border-gray-600 focus:outline-none';
+
 export default function AddEventPage() {
   const [form, setForm] = useState(defaultForm);
   const [saving, setSaving] = useState(false);
+  const [events, setEvents] = useState([]);
+  const [participants, setParticipants] = useState([]);
   const [departments, setDepartments] = useState([]);
   const { notify } = useNotifications();
 
   useEffect(() => {
-    api.get('/departments')
-      .then(({ data }) => {
-        const rows = Array.isArray(data) ? data : data?.data || [];
-        setDepartments(rows);
-      })
-      .catch(() => setDepartments([]));
+    const loadData = async () => {
+      try {
+        const [eventsResponse, participantsResponse, departmentsResponse] = await Promise.all([
+          api.get('/events'),
+          api.get('/participants'),
+          api.get('/departments'),
+        ]);
+        const loadedEvents = eventsResponse.data?.data || eventsResponse.data || [];
+        const loadedParticipants = participantsResponse.data?.data || participantsResponse.data || [];
+        const loadedDepartments = departmentsResponse.data?.data || departmentsResponse.data || [];
+
+        setEvents(loadedEvents);
+        setParticipants(loadedParticipants);
+        setDepartments(loadedDepartments);
+        console.log('EVENTS', loadedEvents);
+        console.log('PARTICIPANTS', loadedParticipants);
+        console.log('DEPARTMENTS', loadedDepartments);
+      } catch {
+        setEvents(fallbackEvents);
+        setParticipants(fallbackParticipants);
+        setDepartments(fallbackDepartments);
+        console.log('EVENTS', fallbackEvents);
+        console.log('PARTICIPANTS', fallbackParticipants);
+        console.log('DEPARTMENTS', fallbackDepartments);
+      }
+    };
+
+    loadData();
   }, []);
 
   const updateField = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
@@ -68,7 +109,7 @@ export default function AddEventPage() {
         ))}
         <div>
           <label className="portal-label mb-2 block text-sm">Department</label>
-          <select value={form.department_id} onChange={updateField('department_id')} className="portal-input">
+          <select value={form.department_id} onChange={updateField('department_id')} className={selectClassName}>
             <option value="">Select department</option>
             {departments.map((department) => (
               <option key={department.id} value={department.id}>

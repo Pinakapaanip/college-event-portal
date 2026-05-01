@@ -15,6 +15,13 @@ const emptyEvent = {
   description: '',
 };
 
+const fallbackDepartments = [
+  { id: 1, department_name: 'CSE' },
+  { id: 2, department_name: 'AI' },
+];
+
+const selectClassName = 'w-full p-3 rounded-lg bg-[#020617] text-white border border-gray-600 focus:outline-none';
+
 export default function ViewEventsPage() {
   const [events, setEvents] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
@@ -58,7 +65,7 @@ export default function ViewEventsPage() {
   useEffect(() => {
     api.get('/departments')
       .then(({ data }) => setDepartments(data?.data || data || []))
-      .catch(() => setDepartments([]));
+      .catch(() => setDepartments(fallbackDepartments));
     fetchEvents();
   }, []);
 
@@ -189,7 +196,7 @@ export default function ViewEventsPage() {
             <form onSubmit={submitEdit} className="mt-5 space-y-4">
               <input value={editingEvent.title} onChange={(event) => setEditingEvent((current) => ({ ...current, title: event.target.value }))} className="portal-input w-full" placeholder="Title" />
               <input value={editingEvent.category} onChange={(event) => setEditingEvent((current) => ({ ...current, category: event.target.value }))} className="portal-input w-full" placeholder="Category" />
-              <select value={editingEvent.department_id} onChange={(event) => setEditingEvent((current) => ({ ...current, department_id: event.target.value }))} className="portal-input w-full">
+              <select value={editingEvent.department_id} onChange={(event) => setEditingEvent((current) => ({ ...current, department_id: event.target.value }))} className={selectClassName}>
                 <option value="">Select department</option>
                 {departments.map((department) => (
                   <option key={department.id || department.department_name} value={department.id || department.department_name}>

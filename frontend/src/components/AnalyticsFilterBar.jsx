@@ -1,4 +1,6 @@
 export default function AnalyticsFilterBar({ filters, onChange, onReset, departments = [], categories = [] }) {
+  const selectClassName = 'w-full p-3 rounded-lg bg-[#020617] text-white border border-gray-600 focus:outline-none';
+
   return (
     <section className="portal-panel p-4">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
@@ -37,7 +39,7 @@ export default function AnalyticsFilterBar({ filters, onChange, onReset, departm
           <select
             value={filters.department}
             onChange={(event) => onChange('department', event.target.value)}
-            className="portal-input w-full"
+            className={selectClassName}
           >
             <option value="">All Departments</option>
             {departments.map((department) => (
@@ -53,7 +55,7 @@ export default function AnalyticsFilterBar({ filters, onChange, onReset, departm
           <select
             value={filters.category}
             onChange={(event) => onChange('category', event.target.value)}
-            className="portal-input w-full"
+            className={selectClassName}
           >
             <option value="">All Categories</option>
             {categories.map((category) => (

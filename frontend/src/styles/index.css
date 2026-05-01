@@ -72,6 +72,17 @@ h3,
   box-sizing: border-box;
 }
 
+select {
+  background-color: #020617 !important;
+  color: white !important;
+  border: 1px solid #334155 !important;
+}
+
+select option {
+  background-color: #020617 !important;
+  color: white !important;
+}
+
 body::before {
   content: '';
   pointer-events: none;
