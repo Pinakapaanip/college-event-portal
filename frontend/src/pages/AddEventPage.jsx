@@ -12,29 +12,19 @@ const defaultForm = {
   description: '',
 };
 
-const fallbackDepartments = [
-  { id: 1, department_name: 'CSE' },
-  { id: 2, department_name: 'AI' },
-  { id: 3, department_name: 'ECE' },
-  { id: 4, department_name: 'MECH' },
-];
-
 export default function AddEventPage() {
   const [form, setForm] = useState(defaultForm);
   const [saving, setSaving] = useState(false);
-  const [departments, setDepartments] = useState(fallbackDepartments);
+  const [departments, setDepartments] = useState([]);
   const { notify } = useNotifications();
 
   useEffect(() => {
     api.get('/departments')
       .then(({ data }) => {
-        const rows = Array.isArray(data) ? data : data?.data || fallbackDepartments;
-        setDepartments(rows.length ? rows : fallbackDepartments);
+        const rows = Array.isArray(data) ? data : data?.data || [];
+        setDepartments(rows);
       })
-      .catch(() => {
-        console.log('Using fallback data');
-        setDepartments(fallbackDepartments);
-      });
+      .catch(() => setDepartments([]));
   }, []);
 
   const updateField = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
@@ -78,11 +68,7 @@ export default function AddEventPage() {
         ))}
         <div>
           <label className="portal-label mb-2 block text-sm">Department</label>
-          <select
-            value={form.department_id}
-            onChange={updateField('department_id')}
-            className="portal-input"
-          >
+          <select value={form.department_id} onChange={updateField('department_id')} className="portal-input">
             <option value="">Select department</option>
             {departments.map((department) => (
               <option key={department.id} value={department.id}>
@@ -93,13 +79,7 @@ export default function AddEventPage() {
         </div>
         <div className="md:col-span-2">
           <label className="portal-label mb-2 block text-sm">Description</label>
-          <textarea
-            value={form.description}
-            onChange={updateField('description')}
-            rows={5}
-            className="portal-input"
-            placeholder="Event description"
-          />
+          <textarea value={form.description} onChange={updateField('description')} rows={5} className="portal-input" placeholder="Event description" />
         </div>
         <div className="md:col-span-2 flex justify-end">
           <button disabled={saving} className="portal-button disabled:opacity-60">

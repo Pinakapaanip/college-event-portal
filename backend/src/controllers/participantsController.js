@@ -1,5 +1,25 @@
 const asyncHandler = require('../utils/asyncHandler');
-const store = require('../services/demoStore');
+const db = require('../services/dbService');
+
+const listParticipants = asyncHandler(async (req, res) => {
+  const eventId = req.query.eventId;
+
+  if (eventId) {
+    const rows = await db.getParticipantsByEvent(Number(eventId));
+    return res.json(rows);
+  }
+
+  const events = await db.listEvents({ limit: 200, sort: 'date', order: 'desc' });
+  const collected = [];
+
+  for (const event of events.data.slice(0, 20)) {
+    const rows = await db.getParticipantsByEvent(event.id);
+    rows.forEach((row) => collected.push(row));
+    if (collected.length >= 200) break;
+  }
+
+  res.json(collected.slice(0, 200));
+});
 
 const addParticipant = asyncHandler(async (req, res) => {
   const { event_id, student_name, roll_no, department, year, participant_type } = req.body;
@@ -8,21 +28,21 @@ const addParticipant = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'All participant fields are required.' });
   }
 
-  const participant = store.addParticipant({
-    event_id,
+  const participant = await db.addParticipant({
+    event_id: Number(event_id),
     student_name,
     roll_no,
     department,
     year,
     participant_type,
   });
-  
+
   res.status(201).json(participant);
 });
 
 const getParticipantsByEvent = asyncHandler(async (req, res) => {
-  const participants = store.getParticipantsByEvent(req.params.eventId);
+  const participants = await db.getParticipantsByEvent(Number(req.params.eventId));
   res.json(participants);
 });
 
-module.exports = { addParticipant, getParticipantsByEvent };
+module.exports = { listParticipants, addParticipant, getParticipantsByEvent };

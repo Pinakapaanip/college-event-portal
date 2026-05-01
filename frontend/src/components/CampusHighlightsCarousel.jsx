@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 
 const slides = [
-  { title: 'OJAS 2K26', src: '/images-scroll/Screenshot%202026-04-25%20123909.png' },
-  { title: 'School of Law', src: '/images-scroll/Screenshot%202026-04-25%20124519.png' },
-  { title: 'Indian Art Event', src: '/images-scroll/Screenshot%202026-04-25%20124405.png' },
-  { title: 'Chanakya Campus', src: '/images-scroll/Screenshot%202026-04-25%20124417.png' },
-  { title: 'Samyuti Celebration', src: '/images-scroll/Screenshot%202026-04-25%20125031.png' },
+  { title: 'OJAS 2K26', src: '/images/Screenshot%202026-04-25%20123909.png' },
+  { title: 'School of Law', src: '/images/Screenshot%202026-04-25%20124519.png' },
+  { title: 'Indian Art Event', src: '/images/Screenshot%202026-04-25%20124405.png' },
+  { title: 'Chanakya Campus', src: '/images/Screenshot%202026-04-25%20124417.png' },
+  { title: 'Samyuti Celebration', src: '/images/Screenshot%202026-04-25%20125031.png' },
 ];
 
 export default function CampusHighlightsCarousel() {
@@ -26,13 +26,7 @@ export default function CampusHighlightsCarousel() {
           {slides.map((slide, index) => (
             <article key={slide.title} className="min-w-full">
               <div className="relative h-[160px] overflow-hidden sm:h-[190px] lg:h-[220px]">
-                <img
-                  src={slide.src}
-                  alt={slide.title}
-                  className="h-full w-full object-cover"
-                  loading={index === 0 ? 'eager' : 'lazy'}
-                  draggable="false"
-                />
+                <img src={slide.src} alt={slide.title} className="h-full w-full object-cover" loading={index === 0 ? 'eager' : 'lazy'} draggable="false" />
                 <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,8,23,0.55),rgba(2,8,23,0.10)_55%,rgba(2,8,23,0.34)),linear-gradient(180deg,rgba(2,8,23,0.08),rgba(2,8,23,0.44))]" />
                 <div className="absolute inset-x-0 bottom-0 h-20 bg-[linear-gradient(180deg,transparent,rgba(2,8,23,0.72))]" />
                 <div className="absolute bottom-4 left-4 z-10">

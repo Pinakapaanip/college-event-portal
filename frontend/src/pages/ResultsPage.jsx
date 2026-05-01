@@ -21,8 +21,7 @@ export default function ResultsPage() {
   const loadResults = async (selectedEventId = '') => {
     const query = selectedEventId ? { params: { eventId: selectedEventId } } : undefined;
     const { data } = await api.get('/results', query);
-    const rows = Array.isArray(data) ? data : data?.data || [];
-    setResults(rows);
+    setResults(Array.isArray(data) ? data : data?.data || []);
   };
 
   const loadParticipants = async (selectedEventId) => {
@@ -31,34 +30,21 @@ export default function ResultsPage() {
       return;
     }
     const { data } = await api.get(`/participants/event/${selectedEventId}`);
-    const rows = Array.isArray(data) ? data : data?.data || [];
-    setParticipants(rows);
+    setParticipants(Array.isArray(data) ? data : data?.data || []);
   };
 
   useEffect(() => {
     api.get('/events')
-      .then(({ data }) => setEvents(data?.data || data || []))
-      .catch(() => {
-        console.log('Using fallback data');
-        setEvents([{ id: 1, title: 'Technical Event 1' }]);
-      });
+      .then(({ data }) => setEvents(data?.data || []))
+      .catch(() => setEvents([]));
 
-    loadResults().catch(() => {
-      console.log('Using fallback data');
-      setResults([]);
-    });
+    loadResults().catch(() => setResults([]));
   }, []);
 
   useEffect(() => {
     if (!eventId) return;
-    loadParticipants(eventId).catch(() => {
-      console.log('Using fallback data');
-      setParticipants([]);
-    });
-    loadResults(eventId).catch(() => {
-      console.log('Using fallback data');
-      setResults([]);
-    });
+    loadParticipants(eventId).catch(() => setParticipants([]));
+    loadResults(eventId).catch(() => setResults([]));
   }, [eventId]);
 
   const handleSubmit = async (event) => {

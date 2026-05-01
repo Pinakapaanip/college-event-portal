@@ -1,5 +1,4 @@
 const router = require('express').Router();
-const { requireRole } = require('../middleware/auth');
 const {
   listEvents,
   getEvent,
@@ -12,8 +11,8 @@ const {
 router.get('/', listEvents);
 router.get('/export/csv', exportEventsCsv);
 router.get('/:id', getEvent);
-router.post('/', requireRole('admin'), createEvent);
-router.put('/:id', requireRole('admin'), updateEvent);
-router.delete('/:id', requireRole('admin'), deleteEvent);
+router.post('/', createEvent);
+router.put('/:id', updateEvent);
+router.delete('/:id', deleteEvent);
 
 module.exports = router;

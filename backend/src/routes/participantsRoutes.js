@@ -1,6 +1,7 @@
 const router = require('express').Router();
-const { addParticipant, getParticipantsByEvent } = require('../controllers/participantsController');
+const { listParticipants, addParticipant, getParticipantsByEvent } = require('../controllers/participantsController');
 
+router.get('/', listParticipants);
 router.post('/', addParticipant);
 router.get('/event/:eventId', getParticipantsByEvent);
 

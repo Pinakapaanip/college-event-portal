@@ -14,33 +14,6 @@ import { createChartTheme } from '../utils/chartTheme';
 
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
-const fallbackEvents = [
-  { id: 1, title: 'Technical Sprint', category: 'Technical', department: 'CSE', department_name: 'CSE', date: '2026-01-15' },
-  { id: 2, title: 'Cultural Beats', category: 'Cultural', department: 'AI', department_name: 'AI', date: '2026-02-12' },
-  { id: 3, title: 'Sports Day', category: 'Sports', department: 'ECE', department_name: 'ECE', date: '2026-03-03' },
-  { id: 4, title: 'Workshop Pro', category: 'Workshop', department: 'MECH', department_name: 'MECH', date: '2026-04-07' },
-];
-
-const fallbackParticipants = [
-  { id: 1, name: 'Aarav Kumar', department: 'CSE', type: 'Internal' },
-  { id: 2, name: 'Priya Sharma', department: 'AI', type: 'Internal' },
-  { id: 3, name: 'John Smith', department: 'ECE', type: 'External' },
-  { id: 4, name: 'Neha Verma', department: 'MECH', type: 'Internal' },
-];
-
-const fallbackParticipation = [
-  { id: 1, eventId: 1, participantId: 1, eventTitle: 'Technical Sprint' },
-  { id: 2, eventId: 2, participantId: 2, eventTitle: 'Cultural Beats' },
-  { id: 3, eventId: 3, participantId: 3, eventTitle: 'Sports Day' },
-  { id: 4, eventId: 4, participantId: 4, eventTitle: 'Workshop Pro' },
-];
-
-const fallbackResults = [
-  { id: 1, eventId: 1, eventTitle: 'Technical Sprint', winnerName: 'Aarav Kumar', rank: 1, points: 100 },
-  { id: 2, eventId: 2, eventTitle: 'Cultural Beats', winnerName: 'Priya Sharma', rank: 2, points: 75 },
-  { id: 3, eventId: 3, eventTitle: 'Sports Day', winnerName: 'John Smith', rank: 3, points: 50 },
-];
-
 export default function AnalyticsPage() {
   const [data, setData] = useState({ events: [], participants: [], participation: [], results: [] });
   const [filters, setFilters] = useState({ startDate: '', endDate: '', department: '', category: '' });
@@ -49,31 +22,26 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     async function loadAnalytics() {
-      try {
-        const [eventsResponse, participantsResponse, participationResponse, resultsResponse] = await Promise.all([
-          api.get('/events').catch(() => ({ data: { data: fallbackEvents } })),
-          api.get('/participants').catch(() => ({ data: { data: fallbackParticipants } })),
-          api.get('/participation').catch(() => ({ data: { data: fallbackParticipation } })),
-          api.get('/results').catch(() => ({ data: fallbackResults })),
-        ]);
+      const [eventsResponse, participantsResponse, participationResponse, resultsResponse] = await Promise.all([
+        api.get('/events'),
+        api.get('/participants'),
+        api.get('/participation'),
+        api.get('/results'),
+      ]);
 
-        const events = (eventsResponse.data?.data || fallbackEvents).map((event) => ({
-          ...event,
-          department_name: event.department_name || event.department || 'Unknown',
-        }));
+      const events = (eventsResponse.data?.data || []).map((event) => ({
+        ...event,
+        department_name: event.department_name || event.department || 'Unknown',
+      }));
 
-        const participantsRows = participantsResponse.data?.data || fallbackParticipants;
-        const participationRows = participationResponse.data?.data || fallbackParticipation;
-        const resultsRows = Array.isArray(resultsResponse.data) ? resultsResponse.data : resultsResponse.data?.data || fallbackResults;
+      const participantsRows = participantsResponse.data?.data || participantsResponse.data || [];
+      const participationRows = participationResponse.data?.data || participationResponse.data || [];
+      const resultsRows = Array.isArray(resultsResponse.data) ? resultsResponse.data : resultsResponse.data?.data || [];
 
-        setData({ events, participants: participantsRows, participation: participationRows, results: resultsRows });
-      } catch {
-        console.log('Using fallback data');
-        setData({ events: fallbackEvents, participants: fallbackParticipants, participation: fallbackParticipation, results: fallbackResults });
-      }
+      setData({ events, participants: participantsRows, participation: participationRows, results: resultsRows });
     }
 
-    loadAnalytics();
+    loadAnalytics().catch(() => setData({ events: [], participants: [], participation: [], results: [] }));
   }, []);
 
   const departmentNames = useMemo(() => [...new Set(data.events.map((event) => event.department_name).filter(Boolean))], [data.events]);
@@ -89,38 +57,23 @@ export default function AnalyticsPage() {
 
   const filteredEventIds = useMemo(() => new Set(filteredEvents.map((event) => event.id)), [filteredEvents]);
 
-  const filteredParticipation = useMemo(() => {
-    const rows = (data.participation || []).filter((item) => filteredEventIds.has(item.eventId));
-    return rows.length ? rows : fallbackParticipation.filter((item) => filteredEventIds.has(item.eventId));
-  }, [data.participation, filteredEventIds]);
-
+  const filteredParticipation = useMemo(() => (data.participation || []).filter((item) => filteredEventIds.has(item.eventId || item.event_id)), [data.participation, filteredEventIds]);
   const participantMap = useMemo(() => new Map((data.participants || []).map((participant) => [participant.id, participant])), [data.participants]);
 
   const filteredParticipants = useMemo(() => {
-    const expanded = filteredParticipation.map((item) => {
-      const participant = participantMap.get(item.participantId);
+    return filteredParticipation.map((item) => {
+      const participant = participantMap.get(item.participantId || item.participant_id);
       if (!participant) return null;
       return {
         ...participant,
-        event_id: item.eventId,
-        event_title: item.eventTitle,
-        participant_type: participant.participant_type || participant.type || 'Internal',
+        event_id: item.eventId || item.event_id,
+        event_title: item.eventTitle || item.event_title,
+        participant_type: participant.participant_type || participant.type || 'internal',
       };
     }).filter(Boolean);
+  }, [filteredParticipation, participantMap]);
 
-    if (expanded.length) return expanded;
-
-    const fallback = (data.participants.length ? data.participants : fallbackParticipants).map((participant) => ({
-      ...participant,
-      participant_type: participant.participant_type || participant.type || 'Internal',
-    }));
-    return fallback;
-  }, [filteredParticipation, participantMap, data.participants]);
-
-  const filteredResults = useMemo(() => {
-    const rows = (data.results || []).filter((item) => filteredEventIds.has(item.eventId || item.event_id));
-    return rows.length ? rows : fallbackResults.filter((item) => filteredEventIds.has(item.eventId));
-  }, [data.results, filteredEventIds]);
+  const filteredResults = useMemo(() => (data.results || []).filter((item) => filteredEventIds.has(item.eventId || item.event_id)), [data.results, filteredEventIds]);
 
   const uniqueParticipantIds = useMemo(() => new Set(filteredParticipants.map((participant) => participant.id)), [filteredParticipants]);
   const totalEvents = filteredEvents.length;
@@ -147,43 +100,30 @@ export default function AnalyticsPage() {
   }, [availableCategories, filteredEvents]);
 
   const participantMixSeries = useMemo(() => {
-    const counts = { Internal: 0, External: 0 };
+    const counts = { internal: 0, external: 0 };
     filteredParticipants.forEach((participant) => {
-      const type = String(participant.participant_type || participant.type || 'Internal').toLowerCase();
-      if (type === 'external') counts.External += 1;
-      else counts.Internal += 1;
+      const type = String(participant.participant_type || participant.type || 'internal').toLowerCase();
+      if (type === 'external') counts.external += 1;
+      else counts.internal += 1;
     });
-
-    if (counts.Internal === 0 && counts.External === 0) {
-      counts.Internal = 7;
-      counts.External = 3;
-    }
 
     return {
       labels: ['Internal', 'External'],
-      datasets: [{ data: [counts.Internal, counts.External], backgroundColor: ['#0b1f4d', '#e67e22'] }],
+      datasets: [{ data: [counts.internal, counts.external], backgroundColor: ['#0b1f4d', '#e67e22'] }],
     };
   }, [filteredParticipants]);
 
   const winners = useMemo(() => {
-    if (filteredResults.length) {
-      return [...filteredResults]
-        .sort((a, b) => Number(a.rank || 99) - Number(b.rank || 99))
-        .slice(0, 10)
-        .map((item, index) => ({
-          id: item.id || index,
-          name: item.student_name || item.winnerName || item.name || 'Winner',
-          event_title: item.event_title || item.eventTitle || 'Event',
-          rank: item.rank || index + 1,
-          note: item.prize || (item.points ? `${item.points} pts` : 'Top performance'),
-        }));
-    }
-
-    return [
-      { id: 1, name: 'Aarav Kumar', event_title: 'Technical Sprint', rank: 1, note: '100 pts' },
-      { id: 2, name: 'Priya Sharma', event_title: 'Cultural Beats', rank: 2, note: '75 pts' },
-      { id: 3, name: 'John Smith', event_title: 'Sports Day', rank: 3, note: '50 pts' },
-    ];
+    return [...filteredResults]
+      .sort((a, b) => Number(a.rank || 99) - Number(b.rank || 99))
+      .slice(0, 10)
+      .map((item, index) => ({
+        id: item.id || index,
+        name: item.student_name || item.winnerName || item.name || 'Winner',
+        event_title: item.event_title || item.eventTitle || 'Event',
+        rank: item.rank || index + 1,
+        note: item.prize || (item.points ? `${item.points} pts` : ''),
+      }));
   }, [filteredResults]);
 
   return (

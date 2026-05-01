@@ -1,8 +1,8 @@
 const asyncHandler = require('../utils/asyncHandler');
-const store = require('../services/demoStore');
+const db = require('../services/dbService');
 
 const getDepartments = asyncHandler(async (req, res) => {
-  const departments = store.getDepartments();
+  const departments = await db.getAllDepartments();
   res.json(departments);
 });
 

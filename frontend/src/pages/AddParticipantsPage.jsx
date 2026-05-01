@@ -24,39 +24,20 @@ export default function AddParticipantsPage() {
       setParticipants([]);
       return;
     }
+
     try {
       const { data } = await api.get(`/participants/event/${eventId}`);
-      const rows = (Array.isArray(data) ? data : data?.data || []).map((participant) => ({
-        id: participant.id,
-        student_name: participant.student_name || participant.name,
-        roll_no: participant.roll_no || participant.rollNo || `DEMO-${participant.id}`,
-        department: participant.department || 'N/A',
-        year: participant.year || '-',
-        participant_type: participant.participant_type || participant.type || 'Internal',
-      }));
+      const rows = Array.isArray(data) ? data : data?.data || [];
       setParticipants(rows);
     } catch {
-      console.log('Using fallback data');
-      setParticipants([
-        { id: 1, student_name: 'John Doe', roll_no: 'CS001', department: 'CSE', year: '3', participant_type: 'Internal' },
-      ]);
+      setParticipants([]);
     }
   };
 
   useEffect(() => {
     api.get('/events')
-      .then(({ data }) => {
-        const eventList = (data.data || data || []).map((eventItem) => ({ id: eventItem.id, title: eventItem.title }));
-        setEvents(eventList);
-      })
-      .catch(() => {
-        console.log('Using fallback data');
-        setEvents([
-          { id: 1, title: 'Technical Event 1' },
-          { id: 2, title: 'Sports Meet' },
-          { id: 3, title: 'Cultural Show' },
-        ]);
-      });
+      .then(({ data }) => setEvents(data?.data || []))
+      .catch(() => setEvents([]));
   }, []);
 
   useEffect(() => {
