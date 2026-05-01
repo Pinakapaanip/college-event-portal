@@ -1,33 +1,38 @@
 const asyncHandler = require('../utils/asyncHandler');
 const db = require('../services/dbService');
+const pool = require('../config/db');
 
 const addResult = asyncHandler(async (req, res) => {
   console.log('BODY:', req.body);
-  const { event_id, participant_id, rank, prize } = req.body;
-  if (!event_id || !participant_id || !rank || !prize) {
+  const { eventId, participantId, event_id, participant_id, rank, prize } = req.body;
+  const mappedEventId = eventId || event_id;
+  const mappedParticipantId = participantId || participant_id;
+
+  if (!mappedEventId || !mappedParticipantId || !rank || !prize) {
     return res.status(400).json({ message: 'All result fields are required.' });
   }
 
-  const result = await db.addResult({
-    event_id: Number(event_id),
-    participant_id: Number(participant_id),
-    rank: Number(rank),
-    prize,
-  });
+  const query = `INSERT INTO results
+    (event_id, participant_id, rank, prize)
+    VALUES ($1, $2, $3, $4)
+    RETURNING *`;
+  const values = [
+    Number(mappedEventId),
+    Number(mappedParticipantId),
+    Number(rank),
+    String(prize).trim(),
+  ];
 
-  const participant = await db.getParticipantById(Number(participant_id));
-  res.status(201).json({
-    success: true,
-    data: {
-      id: result.id,
-      event_id: result.event_id,
-      participant_id: result.participant_id,
-      student_name: participant?.student_name,
-      roll_no: participant?.roll_no,
-      rank: result.rank,
-      prize: result.prize,
-    },
-  });
+  try {
+    const result = await pool.query(query, values);
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    console.error('RESULT INSERT ERROR:', err);
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
 });
 
 const getResults = asyncHandler(async (req, res) => {
