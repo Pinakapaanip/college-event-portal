@@ -30,6 +30,15 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const setAuthSession = ({ user: nextUser, token }) => {
+    if (token) {
+      localStorage.setItem('portal-token', token);
+    }
+    if (nextUser) {
+      setUser(nextUser);
+    }
+  };
+
   const register = async (payload) => {
     const { data } = await api.post('/auth/register', payload);
     localStorage.setItem('portal-token', data.token);
@@ -44,7 +53,7 @@ export function AuthProvider({ children }) {
   };
 
   const value = useMemo(
-    () => ({ user, loading, login, register, logout, isAuthenticated: Boolean(user) }),
+    () => ({ user, loading, login, register, logout, setAuthSession, isAuthenticated: Boolean(user) }),
     [user, loading]
   );
 

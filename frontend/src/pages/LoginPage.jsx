@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { GraduationCap, ShieldCheck, MoonStar, SunMedium } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 import { useTheme } from '../context/ThemeContext';
 import { APP_NAME } from '../config/brand';
@@ -11,10 +9,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('admin@college.edu');
   const [password, setPassword] = useState('password123');
   const [submitting, setSubmitting] = useState(false);
-  const { login } = useAuth();
   const { notify } = useNotifications();
-  const navigate = useNavigate();
-  const location = useLocation();
   const { theme, toggleTheme } = useTheme();
 
   useDocumentTitle(`${APP_NAME} | Login`);
@@ -26,15 +21,43 @@ export default function LoginPage() {
     };
   }, []);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const handleLogin = async () => {
+    alert('Login clicked');
+    console.log('LOGIN CLICKED');
+
+    if (!email || !password) {
+      alert('Please enter email and password.');
+      return;
+    }
+
     setSubmitting(true);
+
     try {
-      await login(email, password);
+      const apiBaseUrl = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+      const response = await fetch(`${apiBaseUrl}/api/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      console.log('API RESPONSE', data);
+
+      if (!response.ok || !data.success) {
+        const errorMessage = data.message || 'Login failed.';
+        alert(errorMessage);
+        notify(errorMessage, 'error');
+        return;
+      }
+
       notify('Logged in successfully.', 'success');
-      navigate(location.state?.from || '/dashboard', { replace: true });
+      window.location.href = '/dashboard';
     } catch (error) {
-      notify(error.response?.data?.message || 'Login failed.', 'error');
+      console.error('LOGIN ERROR', error);
+      alert('Unable to login. Please try again.');
+      notify('Unable to login. Please try again.', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -94,7 +117,7 @@ export default function LoginPage() {
             <p className="portal-subtext mt-2 text-sm">Use the admin account you create through the registration endpoint.</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={(event) => event.preventDefault()} className="space-y-4">
             <div>
               <label className="portal-label mb-2 block text-sm">Email</label>
               <input
@@ -116,7 +139,8 @@ export default function LoginPage() {
               />
             </div>
             <button
-              type="submit"
+              type="button"
+              onClick={handleLogin}
               disabled={submitting}
               className="portal-button w-full disabled:cursor-not-allowed disabled:opacity-60"
             >

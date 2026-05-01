@@ -12,7 +12,7 @@ const register = asyncHandler(async (req, res) => {
   try {
     const user = store.registerUser({ name, email, password, role });
     const token = signToken(user);
-    return res.status(201).json({ user, token });
+    return res.status(201).json({ success: true, message: 'Registration successful.', user, token });
   } catch (error) {
     if (error.statusCode === 409) {
       return res.status(409).json({ message: error.message });
@@ -34,7 +34,7 @@ const login = asyncHandler(async (req, res) => {
     return res.status(401).json({ message: 'Invalid credentials.' });
   }
   const token = signToken(user);
-  res.json({ user, token });
+  res.json({ success: true, message: 'Login successful.', user, token });
 });
 
 module.exports = { register, login };

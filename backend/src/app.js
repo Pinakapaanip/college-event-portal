@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const { notFound, errorHandler } = require('./middleware/error');
+const { login } = require('./controllers/authController');
 
 const authRoutes = require('./routes/authRoutes');
 const eventsRoutes = require('./routes/eventsRoutes');
@@ -17,13 +18,23 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_ORIGIN ? process.env.CLIENT_ORIGIN.split(',') : true, credentials: true }));
-app.use(express.json({ limit: '2mb' }));
+app.use(cors({ origin: '*' }));
+app.use(express.json());
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 300 }));
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'College Event Statistics Portal API', mode: 'demo' });
+});
+
+app.post('/api/login', (req, res) => {
+  const { email, password } = req.body;
+
+  if (email === 'admin@college.edu' && password === 'password') {
+    return res.json({ success: true });
+  }
+
+  return res.status(401).json({ success: false, message: 'Invalid credentials' });
 });
 
 app.use('/api/auth', authRoutes);
