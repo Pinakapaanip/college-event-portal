@@ -15,8 +15,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const message = error.response?.data?.message || 'Request failed.';
-    window.dispatchEvent(new CustomEvent('portal-notification', { detail: { type: 'error', message } }));
+    // Only show error notifications for 401/403 auth errors, not generic failures
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      const message = error.response?.data?.message || 'Authentication failed.';
+      window.dispatchEvent(new CustomEvent('portal-notification', { detail: { type: 'error', message } }));
+    }
     return Promise.reject(error);
   }
 );

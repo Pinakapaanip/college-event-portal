@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react';
 
-const imageRoot = encodeURI('/@fs/C:/Users/alter/OneDrive/Documents/DVA_PROJECT/images scroll');
-
 const slides = [
-  { title: 'OJAS 2K26', src: `${imageRoot}/${encodeURI('Screenshot 2026-04-25 123909.png')}` },
-  { title: 'School of Law', src: `${imageRoot}/${encodeURI('Screenshot 2026-04-25 124519.png')}` },
-  { title: 'Indian Art Event', src: `${imageRoot}/${encodeURI('Screenshot 2026-04-25 124405.png')}` },
-  { title: 'Chanakya Campus', src: `${imageRoot}/${encodeURI('Screenshot 2026-04-25 124417.png')}` },
-  { title: 'Samyuti Celebration', src: `${imageRoot}/${encodeURI('Screenshot 2026-04-25 125031.png')}` },
+  { title: 'OJAS 2K26', src: 'https://images.unsplash.com/photo-1503428593586-e225b39bddfe?w=1200&h=220&fit=crop' },
+  { title: 'School of Law', src: 'https://images.unsplash.com/photo-1541339907198-e83de08ba9ad?w=1200&h=220&fit=crop' },
+  { title: 'Indian Art Event', src: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1200&h=220&fit=crop' },
+  { title: 'Chanakya Campus', src: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1200&h=220&fit=crop' },
+  { title: 'Samyuti Celebration', src: 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=1200&h=220&fit=crop' },
 ];
 
 export default function CampusHighlightsCarousel() {
