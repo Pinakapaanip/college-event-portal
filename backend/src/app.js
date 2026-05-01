@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const { notFound, errorHandler } = require('./middleware/error');
+const pool = require('./config/db');
 const db = require('./services/dbService');
 
 const authRoutes = require('./routes/authRoutes');
@@ -16,15 +17,44 @@ const resultsRoutes = require('./routes/resultsRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 
 const app = express();
+const allowedOrigins = (process.env.CLIENT_ORIGIN || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 app.use(helmet());
-app.use(cors({ origin: '*' }));
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin) || (process.env.NODE_ENV !== 'production' && allowedOrigins.length === 0)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+}));
 app.use(express.json());
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 300 }));
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'College Event Statistics Portal API', mode: 'database' });
+});
+
+app.get('/test-db', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT NOW()');
+    res.json({
+      success: true,
+      message: 'Database connected successfully',
+      time: result.rows[0].now,
+    });
+  } catch (error) {
+    console.error('DB ERROR:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Database connection failed',
+      error: error.message,
+    });
+  }
 });
 
 app.post('/api/login', (req, res) => {

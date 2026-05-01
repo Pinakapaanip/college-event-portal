@@ -163,7 +163,9 @@ async function addParticipant(payload) {
     );
 
     if (existing.rows.length > 0) {
-      throw new Error('Participant with this roll number already exists');
+      const error = new Error('Participant with this roll number already exists');
+      error.statusCode = 409;
+      throw error;
     }
 
     const result = await pool.query(

@@ -37,7 +37,7 @@ const addParticipant = asyncHandler(async (req, res) => {
     participant_type,
   });
 
-  res.status(201).json(participant);
+  res.status(201).json({ success: true, participant });
 });
 
 const getParticipantsByEvent = asyncHandler(async (req, res) => {

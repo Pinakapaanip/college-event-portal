@@ -1,30 +1,9 @@
-const express = require("express");
-const cors = require("cors");
+const app = require('./app');
 
-const app = express();
+const PORT = process.env.PORT || 5050;
 
-app.use(cors());
-app.use(express.json());
-
-app.get("/", (req, res) => {
-	res.send("Backend is running 🚀");
-});
-
-app.post('/login', (req, res) => {
-	const { email, password } = req.body || {};
-	if (email === 'admin@college.edu' && password === 'admin123') {
-		return res.json({
-			success: true,
-			token: 'dummy-token',
-			user: { name: 'Admin', role: 'admin' },
-		});
-	}
-
-	return res.status(401).json({ success: false, message: 'Invalid credentials' });
-});
-
-const PORT = process.env.PORT || 5000;
+console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Loaded' : 'Missing');
 
 app.listen(PORT, () => {
-console.log(`Server running on port ${PORT}`);
+  console.log(`API server running on port ${PORT}`);
 });
