@@ -17,23 +17,22 @@ const resultsRoutes = require('./routes/resultsRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 
 const app = express();
-const allowedOrigins = (process.env.CLIENT_ORIGIN || '')
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter(Boolean);
 
 app.use(helmet());
 app.use(cors({
-  origin(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin) || (process.env.NODE_ENV !== 'production' && allowedOrigins.length === 0)) {
-      return callback(null, true);
-    }
-    return callback(new Error('Not allowed by CORS'));
-  },
+  origin: [
+    'https://college-event-portal-delta.vercel.app',
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,
 }));
 app.use(express.json());
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 300 }));
+
+app.get('/', (req, res) => {
+  res.send('Backend is running');
+});
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'College Event Statistics Portal API', mode: 'database' });

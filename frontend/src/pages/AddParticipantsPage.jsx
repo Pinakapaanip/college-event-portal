@@ -29,10 +29,20 @@ const fallbackDepartments = [
 
 const selectClassName = 'w-full p-3 rounded-lg bg-[#020617] text-white border border-gray-600 focus:outline-none';
 
+const fetchWithRetry = async (url, options, retries = 2) => {
+  try {
+    return await fetch(url, options);
+  } catch (err) {
+    if (retries > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      return fetchWithRetry(url, options, retries - 1);
+    }
+    throw err;
+  }
+};
+
 function apiUrl(path) {
-  const base = (import.meta.env.VITE_API_URL || 'http://localhost:5050').replace(/\/+$/, '');
-  const apiBase = base.endsWith('/api') ? base : `${base}/api`;
-  return `${apiBase}${path}`;
+  return `${import.meta.env.VITE_API_URL}${path}`;
 }
 
 export default function AddParticipantsPage() {
@@ -104,10 +114,11 @@ export default function AddParticipantsPage() {
       participant_type: form.participant_type.toLowerCase(),
     };
 
+    console.log('API URL:', import.meta.env.VITE_API_URL);
     console.log('SENDING:', payload);
 
     try {
-      const response = await fetch(apiUrl('/participants'), {
+      const response = await fetchWithRetry(apiUrl('/api/participants'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
